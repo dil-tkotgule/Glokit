@@ -1,0 +1,33 @@
+# Node.js
+**/node_modules/
+.env
+.env.local
+dist/
+build/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional: Ignore uploads if your backend stores files
+uploads/
+
+# React/Vite specific
+*.tsbuildinfo
+*.sw.*
+*.webmanifest
+
+# Optional: Ignore coverage from tests
+coverage/
