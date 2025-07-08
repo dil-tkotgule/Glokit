@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Table,
   TableBody,
@@ -167,7 +169,7 @@ const ProductList = () => {
         <Table style={{ minWidth: 650, fontSize: '2rem' }}>
           <TableHead style={{ backgroundColor: '#A2D5C6' }}>
             <TableRow >
-              <TableCell />
+              
               <TableCell>Image</TableCell>
               <TableCell >Name</TableCell>
               <TableCell>Description</TableCell>
@@ -190,15 +192,7 @@ const ProductList = () => {
               paginatedProducts.map((product: IProductUI) => (
                 <React.Fragment key={product.product_id}>
                   <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-                    <TableCell>
-                      <IconButton
-                        aria-label="expand row"
-                        size="small"
-                        onClick={() => handleToggleRow(product.product_id)}
-                      >
-                        {openRows[product.product_id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                      </IconButton>
-                    </TableCell>
+                  
                     <TableCell>
                       {product.image_url && product.image_url.length > 0 ? (
                         <img
@@ -248,52 +242,26 @@ const ProductList = () => {
                         {product.category_name}
                       </Link>
                     </TableCell>
+
                     <TableCell>
-                      <Link
-                        to={`/product/${product.product_id}`}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <Button variant="outlined" size="small">
-                          View
-                        </Button>
-                      </Link>
+                      <IconButton
+      component={Link}
+      to={`/product/edit/${product.product_id}`}
+      size="small"
+      aria-label="edit"
+    >
+      <EditIcon />
+    </IconButton>
+    <IconButton
+      onClick={() => handleDelete(product.product_id)}
+      size="small"
+      aria-label="delete"
+    >
+      <DeleteIcon />
+    </IconButton>
                     </TableCell>
                   </TableRow>
-                  <TableRow>
-                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
-                      <Collapse in={openRows[product.product_id]} timeout="auto" unmountOnExit>
-                        <Box sx={{ margin: 1 }}>
-                          
-                          <Table size="small" aria-label="details">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Created At</TableCell>
-                                <TableCell>Updated At</TableCell>
-                                <TableCell>Created By</TableCell>
-                                <TableCell>Updated By</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              <TableRow>
-                                <TableCell>
-                                  {product.created_at ? new Date(product.created_at).toLocaleString() : ''}
-                                </TableCell>
-                                <TableCell>
-                                  {product.updated_at ? new Date(product.updated_at).toLocaleString() : ''}
-                                </TableCell>
-                                <TableCell>
-                                  {product.created_by || '-'}
-                                </TableCell>
-                                <TableCell>
-                                  {product.updated_by || '-'}
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </Box>
-                      </Collapse>
-                    </TableCell>
-                  </TableRow>
+                
                 </React.Fragment>
               ))
             ) : (

@@ -19,7 +19,8 @@ export class ProductRepository {
                 t.file_size
             FROM products p
             JOIN categories c ON p.category_id = c.id
-            JOIN product_thumbnails t ON p.id = t.product_id`
+            JOIN product_thumbnails t ON p.id = t.product_id
+            where p.is_deleted = FALSE`
         );
         const newdbProducts = rows.map(dbProducts => ({
             productId: dbProducts.product_id,
@@ -37,6 +38,24 @@ export class ProductRepository {
         return newdbProducts;
     }
 
+  public async softDeleteProduct(id: string): Promise<boolean> {
+    const result = await pool.query(`
+      UPDATE products
+      SET is_deleted = TRUE, updated_at = NOW()
+      WHERE id = $1 AND is_deleted = FALSE
+    `, [id]);
+
+    // Also soft delete thumbnails
+    await pool.query(`
+      UPDATE product_thumbnails
+      SET is_deleted = TRUE, updated_at = NOW()
+      WHERE product_id = $1
+    `, [id]);
+if(!result.rowCount) {
+      return false; // No rows updated, product may not exist or already deleted    
+}
+    return  result.rowCount > 0;
+  }
     public async getById(id: string): Promise<IProductDBThumbnail[] | null> {
         const { rows } = await pool.query(
             `SELECT 
@@ -53,7 +72,7 @@ export class ProductRepository {
             FROM products p
             JOIN categories c ON p.category_id = c.id
             JOIN product_thumbnails t ON p.id = t.product_id
-            WHERE p.id = $1`, [id]
+            WHERE p.id = $1 and p.is_deleted = FALSE`, [id]
         );
         const newdbProducts = rows.map(dbProducts => ({
             productId: dbProducts.product_id,

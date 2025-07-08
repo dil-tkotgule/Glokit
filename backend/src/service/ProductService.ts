@@ -1,8 +1,8 @@
 import { ProductRepository } from "../repository/ProductRepository";
-import { IProductUI, IProductDB, IProductDBThumbnail } from "../models/Product";
+import { IProductUI, IProductDB, IProductDBThumbnail, IProductUIThumbnail } from "../models/Product";
 import { ICategoryDB } from "../models/Category";
 import { pool } from "../server";
-import { mapProductDBToUI, mapProductUIToDB } from "../mapper/mapper";
+import { mapProductDBToUI, mapProductListDBToUI, mapProductUIToDB } from "../mapper/mapper";
 import ProductValidation from "../ValidationSchemas/ProductValidation";
 import { ValidationError } from "../errors/ErrorHandler";
 import validator from "validator";
@@ -14,14 +14,19 @@ export class ProductService {
         this.productRepository = new ProductRepository();
     }
 
-    public async getAllProducts(): Promise<IProductDBThumbnail[]> {
+    public async getAllProducts(): Promise<IProductUIThumbnail[]> {
         const dbProducts = await this.productRepository.getAll();
-        return dbProducts; // No mapping to IProductUI, return as IProductDBThumbnail[]
+       const uiProducts = mapProductListDBToUI(dbProducts); // Map to UI model if needed
+        return uiProducts; // No mapping to IProductUI, return as IProductDBThumbnail[]
     }
 
-    public async getProductById(id: string): Promise<IProductDBThumbnail[] | null> {
+    public async getProductById(id: string): Promise<IProductUIThumbnail[] > {
         const dbProduct = await this.productRepository.getById(id);
-        return dbProduct; // No mapping to IProductUI, return as IProductDBThumbnail | null
+        if (!dbProduct) {
+            return [];
+        }
+        const uiProducts  = mapProductListDBToUI(dbProduct!);
+        return uiProducts; // No mapping to IProductUI, return as IProductDBThumbnail | null
     }
 
     public async createProduct(product: IProductUI, files: Express.Multer.File[] | undefined): Promise<number> {
@@ -67,6 +72,16 @@ console.log(product.product_price);
             throw error;
         }
     }
+
+
+    public async softDeleteProduct(id: string): Promise<boolean> {
+ const dbProduct = await this.productRepository.getById(id);
+        if (!dbProduct) {
+            return false;
+        }
+    await this.productRepository.softDeleteProduct(id);
+    return true;
+}
 
     public async updateProduct(id: string, product: IProductUI, files: Express.Multer.File[] | undefined): Promise<IProductUI> {
         // --- Sanitization ---
