@@ -29,5 +29,4 @@ router.post('/create', upload.array('thumbnails', 2), productController.createPr
 router.get('/list', productController.getAllProducts.bind(productController));
 router.put('/update/:id', upload.array('thumbnails', 2), validateUpdateProduct, validateThumbnails, productController.updateProduct.bind(productController));
 router.get('/get/:id', productController.getProductById.bind(productController));
-console.log("hellloooo")
 router.delete('/soft-delete/:id', productController.softDeleteProduct.bind(productController));

@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Box, Button, TextField, Typography, FormHelperText,
+  FormControl, InputLabel, Select, MenuItem
+} from '@mui/material';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
-export interface IFormData {
+interface IFormData {
   name: string;
   description: string;
   price: number | null;
@@ -10,17 +14,24 @@ export interface IFormData {
   thumbnails?: FileList | null;
 }
 
+interface IPreview {
+  name: string;
+  size: string;
+  src: string;
+}
+
 interface IFormErrors {
   name?: string;
   description?: string;
   price?: string;
   category_name?: string;
-  thumbnail?: string;
+  thumbnails?: string;
 }
 
 const UpdateProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState<IFormData>({
     name: '',
     description: '',
@@ -28,233 +39,321 @@ const UpdateProduct = () => {
     category_name: '',
     thumbnails: null,
   });
+
   const [errors, setErrors] = useState<IFormErrors>({});
   const [loading, setLoading] = useState(true);
+  const [preview, setPreview] = useState<IPreview[]>([]);
+const [existingPreview, setExistingPreview] = useState<IPreview[]>([]);
 
-  useEffect(() => {
+// const [existingPreview, setExistingPreview] = useState<IPreview[]>([]);
+
+// In useEffect, after fetching data:
+// useEffect(() => {
+//   axios.get(`http://localhost:3000/app/product/get/${id}`)
+//     .then(res => {
+//       const data = Array.isArray(res.data.data) ? res.data.data[0] : res.data.data;
+
+//       setFormData({
+//         name: data.product_name,
+//         description: data.product_description,
+//         price: Number(data.product_price),
+//         category_name: data.category_name,
+//         thumbnails: null,
+//       });
+
+//       // Assume data.images or data.thumbnails contains array of image URLs:
+  
+
+//       setLoading(false);
+//     })
+//     .catch(() => setLoading(false));
+// }, [id]);
+
+
+useEffect(() => {
     axios
       .get(`http://localhost:3000/app/product/get/${id}`)
       .then((res) => {
-        const data = Array.isArray(res.data.data) && res.data.data.length > 0
-          ? res.data.data[0]
-          : res.data.data;
-
+        const data = Array.isArray(res.data.data) ? res.data.data[0] : res.data.data;
+console.log(data)
         setFormData({
           name: data.product_name,
           description: data.product_description,
-          price: data.product_price !== undefined ? Number(data.product_price) : null,
+          price: Number(data.product_price),
           category_name: data.category_name,
           thumbnails: null,
         });
 
+            if (data.images && Array.isArray(data.images)) {
+        // Map to preview format
+        const existingPreviews = data.images.map((url: string, i: number) => ({
+          name: `Image ${i + 1}`,
+          size: '',  // size unknown for existing images
+          src: url,
+        }));
+        setExistingPreview(existingPreviews);
+      }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: name === 'price' ? (value === '' ? null : Number(value)) : value,
+    setFormData(prev => ({
+      ...prev,
+      [name as string]: name === 'price' ? Number(value) : value
     }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+    setFormData(prev => ({ ...prev, thumbnails: files }));
 
-    setFormData((prevData) => ({
-      ...prevData,
-      thumbnails: files,
-    }));
+    if (files) {
+      const previews = Array.from(files).map(file => ({
+        name: file.name,
+        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        src: URL.createObjectURL(file)
+      }));
+      setPreview(previews);
+    }
   };
 
-  const validateForm = (): boolean => {
-    const formErrors: IFormErrors = {};
-    let isValid = true;
+  const validateForm = () => {
+    const newErrors: IFormErrors = {};
+    let valid = true;
 
-    if (!formData.name) {
-      formErrors.name = 'Product name is required.';
-      isValid = false;
-    } else if (formData.name.length < 2) {
-      formErrors.name = 'Product name must be at least 2 characters.';
-      isValid = false;
-    } else if (formData.name.length > 100) {
-      formErrors.name = 'Product name must be less than or equal to 100 characters.';
-      isValid = false;
+    if (!formData.name || formData.name.length < 2 || formData.name.length > 100) {
+      newErrors.name = 'Name must be 2–100 characters';
+      valid = false;
     }
 
-    if (!formData.description) {
-      formErrors.description = 'Description is required.';
-      isValid = false;
-    } else if (formData.description.length > 1000) {
-      formErrors.description = 'Description must be less than or equal to 1000 characters.';
-      isValid = false;
+    if (!formData.description || formData.description.length > 1000) {
+      newErrors.description = 'Description is required and must be under 1000 characters';
+      valid = false;
     }
 
-    if (formData.price === null || formData.price <= 0) {
-      formErrors.price = 'Price must be greater than zero.';
-      isValid = false;
+    if (!formData.price || formData.price <= 0) {
+      newErrors.price = 'Price must be greater than 0';
+      valid = false;
     }
 
     if (!formData.category_name) {
-      formErrors.category_name = 'Category is required.';
-      isValid = false;
+      newErrors.category_name = 'Please select a category';
+      valid = false;
     }
 
     if (!formData.thumbnails || formData.thumbnails.length === 0) {
-      formErrors.thumbnail = 'Please upload at least one image.';
-      isValid = false;
+      newErrors.thumbnails = 'At least 1 image required';
+      valid = false;
     } else if (formData.thumbnails.length > 2) {
-      formErrors.thumbnail = 'You can upload a maximum of 2 images.';
-      console.log("hello")
-      isValid = false;
-      
+      newErrors.thumbnails = 'You can upload a maximum of 2 images';
+      valid = false;
     } else {
-      Array.from(formData.thumbnails).forEach((file) => {
+      Array.from(formData.thumbnails).forEach(file => {
         if (file.size > 5 * 1024 * 1024) {
-          formErrors.thumbnail = 'File size should be less than 5MB.';
-          isValid = false;
+          newErrors.thumbnails = 'Each file must be less than 5MB';
+          valid = false;
         }
       });
     }
 
-    setErrors(formErrors);
-    return isValid;
+    setErrors(newErrors);
+    return valid;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (validateForm()) {
-      const form = new FormData();
-      form.append('product_name', formData.name);
-      form.append('product_description', formData.description);
-      form.append('product_price', formData.price?.toString() || '');
-      form.append('category_name', formData.category_name);
+    const form = new FormData();
+    form.append('product_name', formData.name);
+    form.append('product_description', formData.description);
+    form.append('product_price', formData.price?.toString() || '');
+    form.append('category_name', formData.category_name);
 
-      if (formData.thumbnails) {
-        Array.from(formData.thumbnails).forEach((file) => {
-          form.append('thumbnails', file);
-        });
-      }
-
-      try {
-        await axios.put(`http://localhost:3000/app/product/update/${id}`, form, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        navigate(`/product/${id}`);
-      } catch (err: any) {
-        setErrors({ thumbnail: err.response?.data?.error || 'Update failed' });
-      }
+    if (formData.thumbnails) {
+      Array.from(formData.thumbnails).forEach(file => {
+        form.append('thumbnails', file);
+      });
     }
-   
+
+    try {
+      await axios.put(`http://localhost:3000/app/product/update/${id}`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      navigate(`/product/${id}`);
+    } catch (err: any) {
+      setErrors({ thumbnails: err.response?.data?.error || 'Update failed' });
+    }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Typography>Loading...</Typography>;
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="container mt-3 col-6 h-auto py-2" style={{ backgroundColor: '#F0F4F8', borderRadius: '10px' }} >
-        <h2 className="mb-3">Update Product</h2>
+    <Box
+      component="form"
+      noValidate
+      onSubmit={handleSubmit}
+      sx={{
+        mt: 2,
+        maxWidth: 1000,
+        mx: 'auto',
+        p: 4,
+        backgroundColor: '#fff',
+        borderRadius: 2,
+        boxShadow: 2
+      }}
+    >
+      <Typography variant="h5" gutterBottom fontWeight={500}>
+        Update Product
+      </Typography>
 
-        <div className="mb-2">
-          <label htmlFor="productName" className="form-label">Name</label>
-          <input
-            type="text"
-            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-            id="productName"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Enter product name"
-            required
-            minLength={2}
-            maxLength={100}
-          />
-          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-        </div>
+      <Box display="flex" gap={2} mb={3}>
+        <TextField
+          required
+          label="Name"
+          name="name"
+          fullWidth
+          value={formData.name}
+          onChange={handleChange}
+          error={Boolean(errors.name)}
+          helperText={errors.name}
+        />
+        <TextField
+          required
+          label="Price"
+          name="price"
+          type="number"
+          fullWidth
+          inputProps={{ min: 1 }}
+          value={formData.price ?? ''}
+          onChange={handleChange}
+          error={Boolean(errors.price)}
+          helperText={errors.price}
+        />
+      </Box>
 
-        <div className="mb-2">
-          <label htmlFor="productDesc" className="form-label">Description</label>
-          <textarea
-            className={`form-control ${errors.description ? 'is-invalid' : ''}`}
-            id="productDesc"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Enter product description"
-            required
-            maxLength={1000}
-          />
-          {errors.description && <div className="invalid-feedback">{errors.description}</div>}
-        </div>
+      <Box mb={3}>
+        <TextField
+          label="Description"
+          name="description"
+          fullWidth
+          multiline
+          rows={3}
+          value={formData.description}
+          onChange={handleChange}
+          error={Boolean(errors.description)}
+          helperText={errors.description}
+        />
+      </Box>
 
-        <div className="mb-2">
-          <label htmlFor="category_name" className="form-label">Select Category</label>
-          <select
-            className={`form-control ${errors.category_name ? 'is-invalid' : ''}`}
-            id="category_name"
+      <Box display="flex" gap={2} mb={3}>
+        <FormControl fullWidth required error={Boolean(errors.category_name)}>
+          <InputLabel>Category</InputLabel>
+          <Select
             name="category_name"
             value={formData.category_name}
             onChange={handleChange}
-            required
+            label="Category"
           >
-            <option value="">Select a category</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Home & Kitchen">Home & Kitchen</option>
-            <option value="Beauty">Beauty</option>
-          </select>
-          {errors.category_name && <div className="invalid-feedback">{errors.category_name}</div>}
-        </div>
+            <MenuItem value="">Choose...</MenuItem>
+            <MenuItem value="Electronics">Electronics</MenuItem>
+            <MenuItem value="Clothing">Clothing</MenuItem>
+            <MenuItem value="Accessories">Accessories</MenuItem>
+          </Select>
+          <FormHelperText>{errors.category_name}</FormHelperText>
+        </FormControl>
 
-        <div className="mb-2">
-          <label htmlFor="price" className="form-label">Price</label>
-          <input
-            className={`form-control ${errors.price ? 'is-invalid' : ''}`}
-            type="number"
-            id="price"
-            name="price"
-            value={formData.price !== null ? formData.price : ''}
-            onChange={handleChange}
-            placeholder="Enter product price"
-            required
-            min={0}
-          />
-          {errors.price && <div className="invalid-feedback">{errors.price}</div>}
-        </div>
+        <FormControl fullWidth error={Boolean(errors.thumbnails)}>
+          <Button variant="outlined" component="label">
+            Choose Files
+            <input
+              type="file"
+              name="thumbnails"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={handleFileChange}
+            />
+          </Button>
+          <FormHelperText>
+            Upload max 2 files (≤5MB). {errors.thumbnails}
+          </FormHelperText>
+        </FormControl>
+      </Box>
+<Box display="flex" flexWrap="wrap" gap={2} mt={2}>
+  {existingPreview.map((file, i) => (
+    <Box
+      key={`existing-${i}`}
+      display="flex"
+      gap={1}
+      p={1}
+      border="1px solid #ccc"
+      borderRadius={2}
+    >
+      <img
+        src={file.src}
+        alt={file.name}
+        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4, opacity: 0.7 }}
+      />
+      <Box>
+        <Typography variant="body2" noWrap>{file.name}</Typography>
+        <Typography variant="caption">{file.size}</Typography>
+      </Box>
+    </Box>
+  ))}
 
-        <div className="mb-2">
-          <label htmlFor="productThumbnail" className="form-label">Product Thumbnail</label>
-          <input
-            type="file"
-            className={`form-control ${errors.thumbnail ? 'is-invalid' : ''}`}
-            id="productThumbnail"
-            name="thumbnails"
-            onChange={handleFileChange}
-            accept="image/*"
-            multiple
-          />
-           <small className="form-text text-muted">Max 2 files. Max size 5MB each.</small>
-          {errors.thumbnail && <div className="invalid-feedback">{errors.thumbnail}</div>}
-        </div>
+  {preview.map((file, i) => (
+    <Box
+      key={`new-${i}`}
+      display="flex"
+      gap={1}
+      p={1}
+      border="1px solid #ccc"
+      borderRadius={2}
+    >
+      <img
+        src={file.src}
+        alt={file.name}
+        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
+      />
+      <Box>
+        <Typography variant="body2" noWrap>{file.name}</Typography>
+        <Typography variant="caption">{file.size}</Typography>
+      </Box>
+    </Box>
+  ))}
+</Box>
 
- <button
-              type="submit"
-              className="btn"
-              style={{
-                backgroundColor: '#A2D5C6',
-                color: 'black',
-                fontWeight: 500,
-                padding: '8px 20px',
-                borderRadius: '6px',
-              }}
-            >
-              Update
-            </button>
-      </form>
-    </div>
+      {existingPreview.length > 0 && (
+        <Box display="flex" flexWrap="wrap" gap={2} mt={2}>
+          {preview.map((file, i) => (
+            <Box key={i} display="flex" gap={1} p={1} border="1px solid #ccc" borderRadius={2}>
+              <img
+                src={file.src}
+                alt={file.name}
+                style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
+              />
+              <Box>
+                <Typography variant="body2" noWrap>{file.name}</Typography>
+                <Typography variant="caption">{file.size}</Typography>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      <Box mt={3} display="flex" gap={2}>
+        <Button type="submit" variant="contained" color="primary">
+          Update
+        </Button>
+        <Button variant="outlined" onClick={() => navigate(-1)}>
+          Cancel
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

@@ -1,245 +1,328 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import styles from './CreateProduct.module.css'; // If you use custom styles
+
+import {
+  Box,
+  Button,
+  TextField,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Select,
+  Typography,
+  FormHelperText,
+} from '@mui/material';
+
+import type { SelectChangeEvent } from '@mui/material';
+
+const MAX_IMAGES = 2;
+const MAX_IMAGE_SIZE_MB = 5;
 
 export interface IFormData {
   name: string;
-  description: string;
   price: number;
+  description: string;
   category_name: string;
   thumbnails?: FileList | null;
 }
 
 interface IFormErrors {
   name?: string;
-  description?: string;
   price?: string;
   category_name?: string;
-  thumbnail?: string;
+  description?: string;
+  thumbnails?: string;
 }
 
-const CreateProduct = () => {
-  const navigate = useNavigate();
+const CreateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
-    description: '',
     price: 0,
+    description: '',
     category_name: '',
     thumbnails: null,
   });
 
   const [errors, setErrors] = useState<IFormErrors>({});
+  const [preview, setPreview] = useState<{ src: string; name: string; size: string }[]>([]);
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: name === 'price' ? Number(value) : value,
     }));
+    setErrors((prevData) => ({
+      ...prevData, [name]: ''
+    }));
+
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    setFormData((prevData) => ({
-      ...prevData,
-      thumbnails: files,
+    if (!files) return;
+
+    if (files.length > MAX_IMAGES) {
+      setErrors(prev => ({ ...prev, thumbnails: 'Select no more than two images.' }));
+      return;
+    }
+
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+        setErrors(prevData => ({ ...prevData, thumbnails: 'Each image must be ≤ 5MB.' }));
+        return;
+      }
+    }
+
+    const previews = Array.from(files).map(file => ({
+      src: URL.createObjectURL(file),
+      name: file.name,
+      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
     }));
+    setPreview(previews);
+    setErrors(prevData => ({ ...prevData, thumbnails: '' }));
+    setFormData(prevData => ({ ...prevData, thumbnails: files }));
   };
 
-  const validateForm = (): boolean => {
+  const validate = (): boolean => {
     const formErrors: IFormErrors = {};
-    let isValid = true;
 
-    if (!formData.name) {
-      formErrors.name = 'Product name is required.';
-      isValid = false;
-    } else if (formData.name.length < 2) {
-      formErrors.name = 'Product name must be at least 2 characters.';
-      isValid = false;
-    } else if (formData.name.length > 100) {
-      formErrors.name = 'Product name must be less than or equal to 100 characters.';
-      isValid = false;
+    if (formData.name.length < 2 || formData.name.length > 100 || !/^[a-zA-Z0-9 ]+$/.test(formData.name)) {
+      formErrors.name = 'Product name must be between 2 and 100 characters and alphanumeric';
     }
 
-    if (!formData.description) {
-      formErrors.description = 'Description is required.';
-      isValid = false;
-    } else if (formData.description.length > 1000) {
-      formErrors.description = 'Description must be less than or equal to 1000 characters.';
-      isValid = false;
+    if (!formData.price || isNaN(formData.price) || formData.price <= 0 || !Number.isInteger(formData.price)) {
+      formErrors.price = 'Enter a valid integer price greater than 0';
     }
 
-    if (formData.price <= 0) {
-      formErrors.price = 'Price must be greater than zero.';
-      isValid = false;
-    }
 
     if (!formData.category_name) {
-      formErrors.category_name = 'Category is required.';
-      isValid = false;
+      formErrors.category_name = 'Category is required';
+    }
+    if (formData.description.length > 1000) {
+      formErrors.description = 'Description must be less than or equal to 1000 characters.';
     }
 
-    if (!formData.thumbnails || formData.thumbnails.length === 0) {
-      formErrors.thumbnail = 'Please upload at least one image.';
-      isValid = false;
-    } else if (formData.thumbnails.length > 2) {
-      formErrors.thumbnail = 'You can upload a maximum of 2 images.';
-      isValid = false;
-    } else {
-      Array.from(formData.thumbnails).forEach((file) => {
-        if (file.size > 5 * 1024 * 1024) {
-          formErrors.thumbnail = 'File size should be less than 5MB.';
-          isValid = false;
-        }
-      });
+    if (!formData.thumbnails || formData.thumbnails.length > 2) {
+      formErrors.thumbnails = 'Max 2 images allowed';
     }
 
     setErrors(formErrors);
-    return isValid;
+    return Object.keys(formErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!validate()) return;
 
-    if (validateForm()) {
-      const form = new FormData();
-      form.append('product_name', formData.name);
-      form.append('product_description', formData.description);
-      form.append('product_price', formData.price.toString());
-      form.append('category_name', formData.category_name);
+    const form = new FormData();
+    form.append('product_name', formData.name);
+    form.append('product_price', formData.price.toString());
+    form.append('product_description', formData.description);
+    form.append('category_name', formData.category_name);
 
-      if (formData.thumbnails) {
-        Array.from(formData.thumbnails).forEach((file) => {
-          form.append('thumbnails', file);
-        });
-      }
+    if (formData.thumbnails) {
+      Array.from(formData.thumbnails).forEach(file => {
+        form.append('thumbnails', file);
+      });
+    }
 
-      try {
-        await axios.post('http://localhost:3000/app/product/create', form, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+    console.log(form);
+    setFormData({
+      name: '',
+      description: '',
+      price: 0,
+      category_name: '',
+      thumbnails: null,
+    });
 
-        alert('Product created successfully!');
-        setFormData({
-          name: '',
-          description: '',
-          price: 0,
-          category_name: '',
-          thumbnails: null,
-        });
-        setErrors({});
-        navigate('/');
-      } catch (error) {
-        console.error('Error submitting form:', error);
-      }
+    try {
+      await axios.post('http://localhost:3000/app/product/create', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      alert('Product created successfully!');
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        category_name: '',
+        thumbnails: null,
+      });
+      setErrors({});
+      navigate('/');
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="container mt-3 col-6 h-auto py-2" style={{ backgroundColor: '#F0F4F8', borderRadius: '10px' }} >
-          <div className="mb-3">
-            <h3>Create New Product</h3>
-            <label htmlFor="productName" className="form-label">Name</label>
-            <input
-              type="text"
-              className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-              id="productName"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter product name"
-              required
-              minLength={2}
-              maxLength={100}
-            />
-            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-          </div>
+    <Box
+      component="form"
+      noValidate
+      onSubmit={handleSubmit}
+      sx={{
+        mt: 2,
+        maxWidth: 1000,
+        mx: 'auto',
+        p: 4,
+        backgroundColor: '#fff',
+        borderRadius: 2,
+        boxShadow: 2,
+        height: "auto"
+      }}
+    >
+      <Typography variant="h5" gutterBottom
+        sx={{
+          mb: 2,
+          fontWeight: 250
+        }}
+      >
+        Create Product
+      </Typography>
 
-          <div className="mb-3">
-            <label htmlFor="productDesc" className="form-label">Description</label>
-            <textarea
-              className={`form-control ${errors.description ? 'is-invalid' : ''}`}
-              id="productDesc"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Enter product description"
-              required
-              maxLength={1000}
-            />
-            {errors.description && <div className="invalid-feedback">{errors.description}</div>}
-          </div>
+      <Box display="flex" gap={2} mb={3}>
+        <TextField
+          required
+          label="Name"
+          name="name"
+          fullWidth
+          value={formData.name}
+          onChange={handleChange}
+          error={Boolean(errors.name)}
+          helperText={errors.name}
+        />
+        <TextField
+          required
+          label="price"
+          name="price"
+          type="number"
+          fullWidth
+          inputProps={{ step: 1, min: 1 }}
+          value={formData.price}
+          onChange={handleChange}
+          error={Boolean(errors.price)}
+          helperText={errors.price}
+        />
+      </Box>
 
-          <div className="mb-3">
-            <label htmlFor="category_name" className="form-label">Category</label>
-            <select
-     className={`form-control ${errors.category_name ? 'is-invalid' : ''}`}
-            id="category_name"
+      <Box mb={3}>
+        <TextField
+          label="Description"
+          name="description"
+          fullWidth
+          multiline
+          rows={3}
+          value={formData.description}
+          error={Boolean(errors.description)}
+          helperText={errors.description}
+          onChange={handleChange}
+        />
+      </Box>
+
+      <Box display="flex" gap={2} mb={3}>
+        <FormControl fullWidth required error={Boolean(errors.category_name)}>
+          <InputLabel>Category</InputLabel>
+          <Select
             name="category_name"
             value={formData.category_name}
             onChange={handleChange}
-            required
-            >
-              <option value="">Select a category</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Home & Kitchen">Home & Kitchen</option>
-              <option value="Beauty">Beauty</option>
-            </select>
-            {errors.category_name && <div className="invalid-feedback">{errors.category_name}</div>}
-          </div>
+            label="Category"
+          >
+            <MenuItem value="">Choose...</MenuItem>
+            <MenuItem value="1">Electronics</MenuItem>
+            <MenuItem value="2">Clothing</MenuItem>
+            <MenuItem value="3">Accessories</MenuItem>
+          </Select>
+          <FormHelperText>{errors.category_name}</FormHelperText>
+        </FormControl>
 
-          <div className="mb-3">
-            <label htmlFor="price" className="form-label">Price</label>
-            <input
-              type="number"
-              className={`form-control ${errors.price ? 'is-invalid' : ''}`}
-              id="price"
-              name="price"
-              value={formData.price || ''}
-              onChange={handleChange}
-              placeholder="Enter product price"
-              min={1}
-              required
-            />
-            {errors.price && <div className="invalid-feedback">{errors.price}</div>}
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="productThumbnail" className="form-label">Product Thumbnails</label>
+        <FormControl fullWidth error={Boolean(errors.thumbnails)}>
+          <Button variant="outlined" component="label">
+            Choose Files
             <input
               type="file"
-              className={`form-control ${errors.thumbnail ? 'is-invalid' : ''}`}
-              id="productThumbnail"
               name="thumbnails"
-              onChange={handleFileChange}
               accept="image/*"
               multiple
+              hidden
+              onChange={handleFileChange}
             />
-            {errors.thumbnail && <div className="invalid-feedback">{errors.thumbnail}</div>}
-            <small className="form-text text-muted">Max 2 files. Max size 5MB each.</small>
-          </div>
+          </Button>
 
-          <div className="text-end">
-            <button
-              type="submit"
-              className="btn"
-              style={{
-                backgroundColor: '#A2D5C6',
-                color: 'black',
-                fontWeight: 500,
-                padding: '8px 20px',
-                borderRadius: '6px',
-              }}
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
+          <FormHelperText>
+            Thumbnails (2 images, ≤5MB)
+            {errors.thumbnails && ` — ${errors.thumbnails}`}
+          </FormHelperText>
+
+          <Box mt={1} display="flex" gap={2} flexWrap="wrap">
+            {preview.map((file, index) => (
+              <Box
+                key={index}
+                display="flex"
+                alignItems="center"
+                gap={1}
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  border: '1px solid #ddd',
+                  backgroundColor: '#fdfdfd',
+                  width: 220,
+                }}
+              >
+                <img
+                  src={file.src}
+                  alt={`preview-${index}`}
+                  style={{
+                    width: 60,
+                    height: 60,
+                    objectFit: 'cover',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                  }}
+                />
+
+                <Box overflow="hidden">
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{ fontSize: 13, color: 'green', fontWeight: 500 }}
+                  >
+                    {file.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontSize: 11, color: 'gray' }}
+                  >
+                    {file.size}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+
+        </FormControl>
+
+      </Box>
+
+      <Box mt={2} display="flex" gap={2}>
+        <Button type="submit" variant="contained" color="primary">
+          Create
+        </Button>
+        <Button variant="outlined" href="/">
+          Cancel
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
 export default CreateProduct;
+
+
