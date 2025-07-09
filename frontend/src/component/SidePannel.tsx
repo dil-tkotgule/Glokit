@@ -1,30 +1,26 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
+import {
+  AppBar,
+  Box,
+  CssBaseline,
+  Divider,
+  Drawer,
+  IconButton,
+  Toolbar,
+  Typography,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Container,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import { Link } from 'react-router-dom';
-
-import Drawer from '@mui/material/Drawer';
-import CssBaseline from '@mui/material/CssBaseline';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
+import { Link } from 'react-router-dom';
 
-const drawerWidth = 220;
+const drawerWidth = 240;
 
 interface SidePanelProps {
   children: React.ReactNode;
@@ -32,67 +28,72 @@ interface SidePanelProps {
 
 const SidePannel: React.FC<SidePanelProps> = ({ children }) => {
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
 
-      {/* Fixed AppBar (Header) */}
-      <AppBar position="fixed" sx={{ zIndex: 2 }}>
-        <Container maxWidth="xl" sx={{ backgroundColor: '#000000', width: '100%' }}>
-          <Toolbar disableGutters>
-            {/* Mobile Menu Icon */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, backgroundColor: '#000000' }}>
-              <IconButton
-                size="large"
-                aria-label="open navigation menu"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <MenuIcon />
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </Container>
+      {/* Top AppBar */}
+      <AppBar
+        position="fixed"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1a1a1a' }}
+      >
+        <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            Admin Dashboard
+          </Typography>
+        </Toolbar>
       </AppBar>
 
-      {/* Fixed Sidebar (Drawer) */}
+      {/* Sidebar Drawer */}
       <Drawer
+        variant="permanent"
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: 'border-box',
-            position: 'fixed',
-            height: '100vh',  // Ensures the sidebar spans the full height
-            top: '64px', // Offset the sidebar below the AppBar
+            backgroundColor: '#f5f5f5',
+            paddingTop: '64px', // Matches AppBar height
           },
         }}
-        variant="permanent"
-        anchor="left"
       >
-        <Toolbar />
-        <Divider />
+        <Box sx={{ px: 2, py: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Admin Panel
+          </Typography>
+          <Divider />
+        </Box>
+
         <List>
-          {['Home', 'Create'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
+          {[
+            { text: 'Home', path: '/', icon: <InboxIcon /> },
+            { text: 'Create', path: '/create', icon: <MailIcon /> },
+          ].map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton component={Link} to={item.path}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        <Divider />
       </Drawer>
 
-      {/* Content Area */}
-      <div style={{  paddingTop: '64px', width: '100%', overflowY: 'auto' }}>
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          backgroundColor: '#fafafa',
+          minHeight: '100vh',
+          
+          paddingTop: '80px', // Compensates for AppBar height
+        }}
+      >
         {children}
-      </div>
-
-    </div>
+      </Box>
+    </Box>
   );
 };
 
