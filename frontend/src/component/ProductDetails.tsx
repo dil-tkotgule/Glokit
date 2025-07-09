@@ -31,6 +31,7 @@ const ProductDetails = () => {
     try {
       const response = await axios.get(`http://localhost:3000/app/product/get/${id}`);
       const data = response.data.data;
+      console.log(data)
       if (Array.isArray(data) && data.length > 0) {
         setProduct(data[0]);
         setThumbnails(data.map((item: IProductUIThumbnail) => item.image_url));

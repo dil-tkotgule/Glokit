@@ -131,6 +131,18 @@ const ProductList = () => {
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
 
+  async function handleDelete(product_id: string) {
+    try {
+       const response = await axios.delete(`http://localhost:3000/app/product/soft-delete/${product_id}`);
+       if(response.status === 200) {
+        setProducts(products.filter(product => product.product_id !== Number(product_id)));
+        setError(null);
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
   return (
     <Box sx={{ mt: 1, width: '90%', margin: 'auto' , fontSize: '2rem', fontFamily: 'Arial, sans-serif' }}>
       <Typography variant="h5" sx={{ p: 2 }}>
