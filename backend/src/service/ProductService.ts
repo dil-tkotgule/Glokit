@@ -1,7 +1,7 @@
 import { ProductRepository } from "../repository/ProductRepository";
 import { IProductUI, IProductDB, IProductDBThumbnail, IProductUIThumbnail } from "../models/Product";
 import { ICategoryDB } from "../models/Category";
-import { pool } from "../server";
+import { pool } from "../config/db";
 import { mapProductDBToUI, mapProductListDBToUI, mapProductUIToDB } from "../mapper/mapper";
 import ProductValidation from "../ValidationSchemas/ProductValidation";
 import { ValidationError } from "../errors/ErrorHandler";

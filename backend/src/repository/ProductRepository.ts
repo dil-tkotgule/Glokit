@@ -1,4 +1,4 @@
-import { pool } from "../server";
+import { pool } from "../config/db";
 import { IProductDB,IProductDBThumbnail } from "../models/Product";
 import { ICategoryUI, ICategoryDB } from "../models/Category";
 import { mapCategoryDBToUI, mapCategoryUIToDB, mapThumbnailDBToUI, mapThumbnailUIToDB } from "../mapper/mapper";
