@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import ProductList from './component/ProductList'
 import CreateProduct from './component/CreateProduct'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -8,15 +7,11 @@ import SidePannel from './component/SidePannel'
 
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-    {/* <CreateProduct></CreateProduct> */}
     <BrowserRouter>
-  
       <Routes>
-
         <Route path="/" element={<SidePannel><ProductList /></SidePannel>} />
         <Route path="/home" element={<SidePannel><ProductList /></SidePannel>} />
         <Route path="/create" element={<SidePannel><CreateProduct /></SidePannel>} />
@@ -24,8 +19,6 @@ function App() {
         <Route path="/product/update/:id" element={<SidePannel><UpdateProduct /></SidePannel>} />
       </Routes>
     </BrowserRouter>
-   
-
     </>
   )
 }
