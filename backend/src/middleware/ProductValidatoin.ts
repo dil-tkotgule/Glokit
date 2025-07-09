@@ -5,9 +5,9 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
     const { error } = ProductValidation.createProductSchema().validate(req.body);
 
     if (error) {
-         res.status(400).json({
-            error: error.details[0].message,  
-        });return;
+        res.status(400).json({
+            error: error.details[0].message,
+        }); return;
     }
 
     next();
@@ -18,9 +18,9 @@ export const validateUpdateProduct = (req: Request, res: Response, next: NextFun
 
     if (error) {
         // If validation fails, send error with status 400
-         res.status(400).json({
+        res.status(400).json({
             error: error.details[0].message,  // Provide the first error message
-        });return
+        }); return
     }
 
     next();  // Validation successful, proceed to the next middleware or route handler

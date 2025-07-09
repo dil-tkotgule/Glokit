@@ -4,19 +4,6 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
-// export const pool = new Pool({
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     host: process.env.DB_HOST,
-//     port: Number(process.env.DB_PORT),
-//     database: process.env.DB_NAME
-// });
-
-// pool
-//     .connect()
-//     .then(() => { console.log("database connected") })
-//     .catch((err) => console.log(err));
-
 class Database {
     private static instance: Database;
     private pool: Pool;

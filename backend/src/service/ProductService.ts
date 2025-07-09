@@ -1,6 +1,5 @@
 import { ProductRepository } from "../repository/ProductRepository";
 import { IProductUI, IProductDB, IProductDBThumbnail, IProductUIThumbnail } from "../models/Product";
-import { ICategoryDB } from "../models/Category";
 import { pool } from "../config/db";
 import { mapProductDBToUI, mapProductListDBToUI, mapProductUIToDB } from "../mapper/mapper";
 import ProductValidation from "../ValidationSchemas/ProductValidation";
@@ -16,16 +15,16 @@ export class ProductService {
 
     public async getAllProducts(): Promise<IProductUIThumbnail[]> {
         const dbProducts = await this.productRepository.getAll();
-       const uiProducts = mapProductListDBToUI(dbProducts); // Map to UI model if needed
+        const uiProducts = mapProductListDBToUI(dbProducts); // Map to UI model if needed
         return uiProducts; // No mapping to IProductUI, return as IProductDBThumbnail[]
     }
 
-    public async getProductById(id: string): Promise<IProductUIThumbnail[] > {
+    public async getProductById(id: string): Promise<IProductUIThumbnail[]> {
         const dbProduct = await this.productRepository.getById(id);
         if (!dbProduct) {
             return [];
         }
-        const uiProducts  = mapProductListDBToUI(dbProduct!);
+        const uiProducts = mapProductListDBToUI(dbProduct!);
         return uiProducts; // No mapping to IProductUI, return as IProductDBThumbnail | null
     }
 
@@ -36,7 +35,7 @@ export class ProductService {
             product.product_name = validator.escape(validator.trim(String(product.product_name)));
             product.product_description = validator.escape(validator.trim(String(product.product_description)));
             product.product_price = Number(product.product_price);
-console.log(product.product_price);
+            console.log(product.product_price);
             // Joi validation for product fields
             const { error } = ProductValidation.createProductSchema().validate(product);
             if (error) {
@@ -75,20 +74,20 @@ console.log(product.product_price);
 
 
     public async softDeleteProduct(id: string): Promise<boolean> {
- const dbProduct = await this.productRepository.getById(id);
+        const dbProduct = await this.productRepository.getById(id);
         if (!dbProduct) {
             return false;
         }
-    await this.productRepository.softDeleteProduct(id);
-    return true;
-}
+        await this.productRepository.softDeleteProduct(id);
+        return true;
+    }
 
     public async updateProduct(id: string, product: IProductUI, files: Express.Multer.File[] | undefined): Promise<IProductUI> {
         // --- Sanitization ---
         product.product_name = validator.escape(validator.trim(String(product.product_name)));
         product.product_description = validator.escape(validator.trim(String(product.product_description)));
         product.product_price = Number(product.product_price);
-console.log(product.product_price)
+        console.log(product.product_price)
         // Joi validation for product fields
         const { error } = ProductValidation.updateProductSchema().validate(product);
         if (error) {
@@ -176,9 +175,9 @@ console.log(product.product_price)
     //     };
     // }
 }
-    //         updatedDate: ui.updated_at,
-    //         isDeleted: false,
-    //     };
-    // }
+//         updatedDate: ui.updated_at,
+//         isDeleted: false,
+//     };
+// }
 
 
