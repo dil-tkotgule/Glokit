@@ -21,8 +21,6 @@ logs/
 .DS_Store
 Thumbs.db
 
-# Optional: Ignore uploads if your backend stores files
-uploads/
 
 # React/Vite specific
 *.tsbuildinfo

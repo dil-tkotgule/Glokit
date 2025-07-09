@@ -28,7 +28,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Link } from 'react-router-dom';
 
 interface IProductUI {
-  product_id: number;
+  product_id: string;
   product_name: string;
   product_description: string;
   product_price: number;
@@ -121,12 +121,12 @@ const ProductList = () => {
     setPage(0);
   };
 
-  const handleToggleRow = (productId: number) => {
-    setOpenRows((prev) => ({
-      ...prev,
-      [productId]: !prev[productId],
-    }));
-  };
+  // const handleToggleRow = (productId: number) => {
+  //   setOpenRows((prev) => ({
+  //     ...prev,
+  //     [productId]: !prev[productId],
+  //   }));
+  // };
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -135,7 +135,7 @@ const ProductList = () => {
     try {
        const response = await axios.delete(`http://localhost:3000/app/product/soft-delete/${product_id}`);
        if(response.status === 200) {
-        setProducts(products.filter(product => product.product_id !== Number(product_id)));
+        setProducts(products.filter(product => product.product_id !== product_id));
         setError(null);
       }
     } catch (err) {
@@ -258,7 +258,7 @@ const ProductList = () => {
                     <TableCell>
                       <IconButton
       component={Link}
-      to={`/product/edit/${product.product_id}`}
+      to={`/product/update/${product.product_id}`}
       size="small"
       aria-label="edit"
     >
