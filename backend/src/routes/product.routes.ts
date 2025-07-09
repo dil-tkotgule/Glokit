@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { ProductController} from '../controller/ProductController';
 import { ProductService } from '../service/ProductService';
-import { validateCreateProduct, validateUpdateProduct } from '../middleware/ProductValidatoin';
+import { validateUpdateProduct } from '../middleware/ProductValidatoin';
 import validateThumbnails  from '../middleware/thumbnailValidationMiddleware';
 export const router = express.Router();
 

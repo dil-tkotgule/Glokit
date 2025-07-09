@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import { IProductDB,IProductDBThumbnail } from "../models/Product";
+import { IProductDB, IProductDBThumbnail } from "../models/Product";
 import { ICategoryUI, ICategoryDB } from "../models/Category";
 import { mapCategoryDBToUI, mapCategoryUIToDB, mapThumbnailDBToUI, mapThumbnailUIToDB } from "../mapper/mapper";
 
@@ -7,55 +7,44 @@ export class ProductRepository {
     public async getAll(): Promise<IProductDBThumbnail[]> {
         const { rows } = await pool.query(
             `SELECT 
-    p."id" as "productId",
-    p."name",
-    p."description",
-    p."price",
-    p."categoryId",
-    p."createdAt",
-    p."updatedAt",
-    c."name" AS "categoryName",
-    t."imageUrl",
-    t."fileSize"
-FROM products p
-JOIN categories c ON p."categoryId" = c."id"
-JOIN product_thumbnails t ON p."id" = t."productId"
-WHERE p."isDeleted" = FALSE;`
+                p."id" as "productId",
+                p."name",
+                p."description",
+                p."price",
+                p."categoryId",
+                p."createdAt",
+                p."updatedAt",
+                c."name" AS "categoryName",
+                t."imageUrl",
+                t."fileSize"
+            FROM products p
+            JOIN categories c ON p."categoryId" = c."id"
+            JOIN product_thumbnails t ON p."id" = t."productId"
+            WHERE p."isDeleted" = FALSE;`
         );
-        // const newdbProducts = rows.map(dbProducts => ({
-        //     productId: dbProducts.product_id,
-        //     name: dbProducts.name,
-        //     description: dbProducts.description,
-        //     price: dbProducts.price,
-        //     categoryId: dbProducts.category_id,
-        //     createdAt: dbProducts.created_at,
-        //     updatedAt: dbProducts.updated_at,
-        //     categoryName: dbProducts.category_name,
-        //     imageUrl: dbProducts.image_url,
-        //     fileSize: dbProducts.file_size
-        // }));
+
         console.log("Fetched products:", rows); // Debugging log
         return rows;
     }
 
-  public async softDeleteProduct(id: string): Promise<boolean> {
-    const result = await pool.query(`
-      UPDATE products
-      SET "isDeleted" = TRUE, "updatedAt" = NOW()
-      WHERE "id" = $1 AND "isDeleted" = FALSE
-    `, [id]);
+    public async softDeleteProduct(id: string): Promise<boolean> {
+        const result = await pool.query(`
+            UPDATE products
+            SET "isDeleted" = TRUE, "updatedAt" = NOW()
+            WHERE "id" = $1 AND "isDeleted" = FALSE
+        `, [id]);
 
-    // Also soft delete thumbnails
-    await pool.query(`
-      UPDATE product_thumbnails
-      SET "isDeleted" = TRUE, "updatedAt" = NOW()
-      WHERE "productId" = $1
-    `, [id]);
-if(!result.rowCount) {
-      return false; // No rows updated, product may not exist or already deleted    
-}
-    return  result.rowCount > 0;
-  }
+        // Also soft delete thumbnails
+        await pool.query(`
+            UPDATE product_thumbnails
+            SET "isDeleted" = TRUE, "updatedAt" = NOW()
+            WHERE "productId" = $1
+        `, [id]);
+        if (!result.rowCount) {
+            return false; // No rows updated, product may not exist or already deleted    
+        }
+        return result.rowCount > 0;
+    }
     public async getById(id: string): Promise<IProductDBThumbnail[] | null> {
         const { rows } = await pool.query(
             `SELECT 
