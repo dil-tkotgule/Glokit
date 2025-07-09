@@ -3,8 +3,8 @@
 1. open powershell
 
 
-2. copy paste this in the same folder where file is present 
+2. copy paste  all the query
 ```
-psql -U postgres -d Product -f product_schema.sql
+ product_schema.sql
 
 ```
