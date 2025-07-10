@@ -213,7 +213,7 @@ const ProductList = () => {
       </Box>
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
         <Table style={{ minWidth: 650, fontSize: "2rem" }}>
-          <TableHead style={{ backgroundColor: "#A2D5C6" }}>
+          <TableHead style={{ backgroundColor: "#e35d10" }}>
             <TableRow>
               <TableCell>
                 <Button
@@ -412,21 +412,25 @@ const ProductList = () => {
                     </TableCell>
 
                     <TableCell>
-                      <IconButton
-                        component={Link}
-                        to={`/product/update/${product.product_id}`}
-                        size="small"
-                        aria-label="edit"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => handleDelete(product.product_id)}
-                        size="small"
-                        aria-label="delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <IconButton
+                          component={Link}
+                          to={`/product/update/${product.product_id}`}
+                          size="small"
+                          aria-label="edit"
+                          sx={{ color: "#1976d2" }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDelete(product.product_id)}
+                          size="small"
+                          aria-label="delete"
+                          sx={{ color: "#9c1922" }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 </React.Fragment>
