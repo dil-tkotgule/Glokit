@@ -62,9 +62,9 @@ export class ProductService {
 
             const dbProduct: IProductDB = mapProductUIToDB(product);
             const productID = await this.productRepository.createProduct(dbProduct);
-
+console.log(files)
             for (const file of files) {
-                await this.productRepository.addProductThumbnail(productID.toString(), file.path, file.size);
+                await this.productRepository.addProductThumbnail(productID.toString(), `uploads\\${file.filename}`, file.size);
             }
             return productID;
         } catch (error) {
@@ -125,7 +125,7 @@ export class ProductService {
             );
             await this.productRepository.deleteProductThumbnails(id);
             for (const file of files) {
-                await this.productRepository.addProductThumbnail(id, file.path, file.size);
+                await this.productRepository.addProductThumbnail(id, `uploads\\${file.filename}`, file.size);
             }
             await pool.query("COMMIT");
             return mapProductDBToUI(updatedProduct);
@@ -137,6 +137,7 @@ export class ProductService {
 
     // Accepts category name, returns category id (number)
     private async ensureCategoryExists(categoryName: string): Promise<number> {
+        console.log(categoryName)
         let categoryId: number | null = await this.productRepository.getCategoryByName(categoryName);
         if (!categoryId) {
             const newCategory = await this.productRepository.createCategory(categoryName);
