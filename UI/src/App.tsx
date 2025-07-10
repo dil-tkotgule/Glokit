@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ProductDetails from './component/ProductDetails'
 import UpdateProduct from './component/UpdateProduct'
 import SidePannel from './component/SidePannel'
-
+import Login from './component/Login'
 
 function App() {
 
@@ -17,6 +17,7 @@ function App() {
         <Route path="/create" element={<SidePannel><CreateProduct /></SidePannel>} />
         <Route path="/product/:id" element={<SidePannel><ProductDetails /></SidePannel>} />
         <Route path="/product/update/:id" element={<SidePannel><UpdateProduct /></SidePannel>} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
     </>
