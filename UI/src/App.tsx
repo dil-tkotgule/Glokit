@@ -1,8 +1,8 @@
-import ProductList from './component/ProductList'
-import CreateProduct from './component/CreateProduct'
+import ProductList from './page/ProductList'
+import CreateProduct from './page/CreateProduct'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ProductDetails from './component/ProductDetails'
-import UpdateProduct from './component/UpdateProduct'
+import UpdateProduct from './page/UpdateProduct'
 import SidePannel from './component/SidePannel'
 import HomePage from '../src/component/User/HomePage'
 

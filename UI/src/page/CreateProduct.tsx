@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { Close } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -46,8 +46,8 @@ const CreateProduct: React.FC = () => {
 
   const [errors, setErrors] = useState<IFormErrors>({});
   const [preview, setPreview] = useState<{ src: string; name: string; size: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);  // Ref for file input
   const navigate = useNavigate();
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
@@ -60,7 +60,6 @@ const CreateProduct: React.FC = () => {
     setErrors((prevData) => ({
       ...prevData, [name]: ''
     }));
-
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,9 +83,27 @@ const CreateProduct: React.FC = () => {
       name: file.name,
       size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
     }));
+    console.log(files);
+    console.log(previews);
+
     setPreview(previews);
     setErrors(prevData => ({ ...prevData, thumbnails: '' }));
     setFormData(prevData => ({ ...prevData, thumbnails: files }));
+
+    // Reset the file input value so the user can select the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; 
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const updatedPreview = preview.filter((_, i) => i !== index);
+    setPreview(updatedPreview);
+    
+    // Reset the thumbnails in form data if there are no images left
+    if (updatedPreview.length === 0) {
+      setFormData((prevData) => ({ ...prevData, thumbnails: null }));
+    }
   };
 
   const validate = (): boolean => {
@@ -99,7 +116,6 @@ const CreateProduct: React.FC = () => {
     if (!formData.price || isNaN(formData.price) || formData.price <= 0 || !Number.isInteger(formData.price)) {
       formErrors.price = 'Enter a valid integer price greater than 0';
     }
-
 
     if (!formData.category_name) {
       formErrors.category_name = 'Category is required';
@@ -186,6 +202,7 @@ const CreateProduct: React.FC = () => {
         Create Product
       </Typography>
 
+      {/* Form Fields */}
       <Box display="flex" gap={2} mb={3}>
         <TextField
           required
@@ -225,6 +242,7 @@ const CreateProduct: React.FC = () => {
         />
       </Box>
 
+      {/* Category and Image Input */}
       <Box display="flex" gap={2} mb={3}>
         <FormControl fullWidth required error={Boolean(errors.category_name)}>
           <InputLabel>Category</InputLabel>
@@ -246,6 +264,7 @@ const CreateProduct: React.FC = () => {
           <Button variant="outlined" component="label">
             Choose Files
             <input
+              ref={fileInputRef} // Using ref to reset file input
               type="file"
               name="thumbnails"
               accept="image/*"
@@ -256,63 +275,83 @@ const CreateProduct: React.FC = () => {
           </Button>
 
           <FormHelperText>
-            Thumbnails (2 images, ≤5MB)
+            Only two images allowed, and each image must be less than 5MB.
             {errors.thumbnails && ` — ${errors.thumbnails}`}
           </FormHelperText>
 
-         <Box mt={1} display="flex" gap={1} flexWrap="nowrap">
-  {preview.map((file, index) => (
-    <Box
-      key={index}
-      display="flex"
-      alignItems="center"
-      gap={1}
-      sx={{
-        p: 1,
-        borderRadius: 2,
-        border: '1px solid #ddd',
-        backgroundColor: '#fdfdfd',
-        width: 120, // adjust width to fit your images
-        justifyContent: 'center', // ensures content is centered
-      }}
-    >
-      <img
-        src={file.src}
-        alt={`preview-${index}`}
-        style={{
-          width: 60,
-          height: 60,
-          objectFit: 'cover',
-          borderRadius: 4,
-          border: '1px solid #ccc',
-        }}
-      />
+          {/* Image Preview */}
+          <Box mt={1} display="flex" gap={1} flexWrap="nowrap">
+            {preview.map((file, index) => (
+              <Box
+                key={index}
+                display="flex"
+                alignItems="center"
+                gap={1}
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  border: '1px solid #ddd',
+                  backgroundColor: '#fdfdfd',
+                  width: 215,
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}
+              >
+                <img
+                  src={file.src}
+                  alt={`preview-${index}`}
+                  style={{
+                    width: 60,
+                    height: 60,
+                    objectFit: 'cover',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                  }}
+                />
 
-      <Box overflow="hidden">
-        <Typography
-          variant="body2"
-          noWrap
-          sx={{ fontSize: 13, color: 'green', fontWeight: 500 }}
-        >
-          {file.name}
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ fontSize: 11, color: 'gray' }}
-        >
-          {file.size}
-        </Typography>
-      </Box>
-    </Box>
-  ))}
+                {/* Close Button */}
+             <Box
+  onClick={() => handleRemoveImage(index)} // Remove image
+  sx={{
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#fff',
+    borderRadius: '50%', // This makes it circular
+    padding: 0.5, // Ensure there's space around the icon
+    cursor: 'pointer',
+    boxShadow: 2,
+    display: 'flex',
+    justifyContent: 'center', // Center the icon inside the circle
+    alignItems: 'center', // Center the icon inside the circle
+  }}
+>
+  <Close sx={{ fontSize: 12, color: 'red', opacity: 0.7 }} />
 </Box>
 
 
-
+                <Box overflow="hidden">
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{ fontSize: 13, color: 'green', fontWeight: 500 }}
+                  >
+                    {file.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontSize: 11, color: 'gray' }}
+                  >
+                    {file.size}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
         </FormControl>
-
       </Box>
 
+      {/* Submit and Cancel Buttons */}
       <Box mt={2} display="flex" gap={2}>
         <Button type="submit" variant="contained" color="primary">
           Create
@@ -326,5 +365,3 @@ const CreateProduct: React.FC = () => {
 };
 
 export default CreateProduct;
-
-
