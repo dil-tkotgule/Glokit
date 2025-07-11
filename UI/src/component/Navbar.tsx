@@ -1,34 +1,42 @@
-// import * as React from 'react';
-// import Box from '@mui/material/Box';
-// import IconButton from '@mui/material/IconButton';
-// import Menu from '@mui/material/Menu';
-// import MenuIcon from '@mui/icons-material/Menu';
-// import Container from '@mui/material/Container';
-// import Avatar from '@mui/material/Avatar';
-// import Button from '@mui/material/Button';
-// import Tooltip from '@mui/material/Tooltip';
-// import MenuItem from '@mui/material/MenuItem';
-// import { Link } from 'react-router-dom';
+import React from 'react';
+import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 
-// import Drawer from '@mui/material/Drawer';
-// import CssBaseline from '@mui/material/CssBaseline';
-// import AppBar from '@mui/material/AppBar';
-// import Toolbar from '@mui/material/Toolbar';
-// import List from '@mui/material/List';
-// import Typography from '@mui/material/Typography';
-// import Divider from '@mui/material/Divider';
-// import ListItem from '@mui/material/ListItem';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemIcon from '@mui/material/ListItemIcon';
-// import ListItemText from '@mui/material/ListItemText';
-// import InboxIcon from '@mui/icons-material/MoveToInbox';
-// import MailIcon from '@mui/icons-material/Mail';
+interface NavbarProps {
+  probe?: string;
+}
 
-// const drawerWidth = 240;
+const Navbar: React.FC<NavbarProps> = ({ probe }) => (
+  <AppBar
+    position="fixed"
+    elevation={1}
+    sx={{
+      zIndex: (theme) => theme.zIndex.drawer + 1,
+      backgroundColor: '#1a1a1a',
+      color: '#fff',
+    }}
+  >
+    <Toolbar>
+      <IconButton
+        edge="start"
+        color="inherit"
+        aria-label="menu"
+        sx={{ mr: 2, display: { sm: 'none' } }}
+      >
+        <MenuIcon />
+      </IconButton>
+      <Typography variant="h6" noWrap fontWeight="bold">
+        Admin {
+            probe &&
+            <span >{probe}</span>
+        }
+      </Typography>
+     
+    </Toolbar>
+  </AppBar>
+);
 
-// const pages = ['Home', 'Create'];
-// const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-
+export default Navbar;
 // // Common text styles
 // const navTextStyle = {
 //   fontFamily: 'Roboto, sans-serif',
