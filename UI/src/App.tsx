@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ProductDetails from './component/ProductDetails'
 import UpdateProduct from './page/UpdateProduct'
 import SidePannel from './component/SidePannel'
-import Login from './component/Login'
+import Login from './page/Login'
 
 function App() {
 
