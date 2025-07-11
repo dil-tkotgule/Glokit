@@ -11,7 +11,10 @@ const SidePanel: React.FC<SidePanelProps> = ({ children }) => {
   const theme = useTheme();
 
   // Example probe value
-  const probe = 'Probe Value';
+  // take the username from cokies or localStorage
+  // const probe = .getItem('username') || 'Guest';
+  
+  const probe = '';
 
   return (
     <Box sx={{ display: 'flex' }}>

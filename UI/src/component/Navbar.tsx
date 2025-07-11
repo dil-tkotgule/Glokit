@@ -1,6 +1,6 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import React from "react";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 interface NavbarProps {
   probe?: string;
@@ -12,26 +12,27 @@ const Navbar: React.FC<NavbarProps> = ({ probe }) => (
     elevation={1}
     sx={{
       zIndex: (theme) => theme.zIndex.drawer + 1,
-      backgroundColor: '#1a1a1a',
-      color: '#fff',
+      backgroundColor: "#1a1a1a",
+      color: "#fff",
+      
     }}
   >
-    <Toolbar>
-      <IconButton
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-        sx={{ mr: 2, display: { sm: 'none' } }}
-      >
-        <MenuIcon />
-      </IconButton>
+    <Toolbar
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+      
       <Typography variant="h6" noWrap fontWeight="bold">
-        Admin {
-            probe &&
-            <span >{probe}</span>
-        }
+        Admin
       </Typography>
-     
+      <Typography
+        variant="subtitle1"
+        sx={{ ml: 2, color: "#fff", justifySelf: "end" }}
+      >
+        {probe}
+      </Typography>
     </Toolbar>
   </AppBar>
 );
@@ -77,7 +78,7 @@ export default Navbar;
 //   };
 
 //   return (
-  
+
 //   );
 // }
 
