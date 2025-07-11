@@ -10,12 +10,10 @@ class UserController {
 
     public async login(req: Request, res: Response): Promise<void> {
         try {
-            console.log(req.body);
-
             const { email, password } = req.body;
-            
+
             const user = await UserService.login(email, password);
-            
+
             if (!user) {
                 sendError(res, new NotFoundError("Invalid email or password"));
                 return;
@@ -27,7 +25,6 @@ class UserController {
                 email: user.email,
                 role: user.role
             }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-
 
             res.cookie('token', token, {
                 httpOnly: true,
@@ -50,6 +47,25 @@ class UserController {
             sendSuccess(res, {}, "User logged out successfully");
         } catch (error) {
             logger.error("Error logging out user", { error });
+            sendError(res, error);
+        }
+    }
+
+    public async register(req: Request, res: Response): Promise<void> {
+        try {
+            const { email, password, name } = req.body;
+
+            // Call the UserService to handle registration logic
+            const user = await UserService.register(email, password, name);
+
+            if (!user) {
+                sendError(res, new NotFoundError("User registration failed"));
+                return;
+            }
+
+            sendSuccess(res, { user }, "User registered successfully");
+        } catch (error) {
+            logger.error("Error registering user", { error });
             sendError(res, error);
         }
     }

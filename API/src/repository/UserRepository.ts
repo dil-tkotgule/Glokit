@@ -32,6 +32,15 @@ class UserRepository {
     public async logout(userId: number): Promise<void> {
         console.log(`User with ID ${userId} logged out.`);
     }
+
+    public async register(userData: Partial<UserDB>): Promise<UserDB> {
+        const { rows } = await pool.query(
+            `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [userData.name, userData.email, userData.password_hash, userData.role]
+        );
+
+        return rows[0];
+    }
 }
 
 export default new UserRepository();

@@ -5,7 +5,6 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import { ValidationError } from "../errors/ErrorHandler";
 import UserValidation from "../ValidationSchemas/UserValidation";
-import { sendError } from "../utils/responseUtil";
 
 class UserService {
 
@@ -62,6 +61,43 @@ class UserService {
 
         // Call the repository method to perform logout
         await UserRepository.logout(userId);
+    }
+
+    public async register(email: string, password: string, name: string): Promise<UserUI> {
+        // --- Sanitization ---
+        email = validator.escape(validator.trim(email));
+        password = validator.escape(validator.trim(password));
+        name = validator.escape(validator.trim(name));
+
+        // Joi validation for email and password
+        const { error } = UserValidation.registerSchema().validate({ email, password, name });
+        if (error) {
+            throw new ValidationError(error.details[0].message);
+        }
+
+        // Check if user already exists
+        const existingUser = await UserRepository.getUserByEmail(email);
+        if (existingUser) {
+            throw new ValidationError("User with this email already exists.");
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new user object
+        const newUser: Partial<UserDB> = {
+            email,
+            password_hash: hashedPassword,
+            role: 'fresher', // Default role, can be changed later
+            user_id: 0, // This will be set by the database
+            name
+        };
+
+        // Save the user to the database
+        const createdUser = await UserRepository.register(newUser);
+
+        // Map DB to UI (do not expose password_hash)
+        return mapUserDBToUI(createdUser);
     }
 
 }
