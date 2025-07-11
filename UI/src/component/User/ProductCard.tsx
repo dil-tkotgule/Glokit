@@ -130,10 +130,11 @@ import {
 } from '@mui/material';
 
 interface ProductInterface {
-  id: number;
+  productId: number;
   name: string;
   description: string;
-  category: string;
+  categoryName: string;
+  imageUrl:string
 }
 
 const ProductCard: React.FC<{ product: ProductInterface }> = ({ product }) => {

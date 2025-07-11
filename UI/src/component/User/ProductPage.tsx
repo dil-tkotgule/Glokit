@@ -1,157 +1,16 @@
-// import React from 'react';
-// // import { ProductInterface } from '../types/ProductInterface';
-// import Card from './ProductCard';
-// import { Box, Grid, Container, Button } from '@mui/material';
-
-// interface ProductInterface {
-//     id: number;
-//     name: string;
-//     description: string;
-//     category: string;
-// };
-// const products: ProductInterface[] = [
-//     {
-//         id: 1,
-//         name: "Waterproof Jacket",
-//         description: "Breathable and lightweight jacket with a hood, perfect for rainy weather.",
-//         category: "Clothing"
-//     },
-//     {
-//         id: 2,
-//         name: "Wireless Charging Pad",
-//         description: "Fast wireless charger compatible with iPhone, Samsung, and other Qi-enabled devices.",
-//         category: "Electronic"
-//     },
-//     {
-//         id: 3,
-//         name: "Stainless Steel Mug",
-//         description: "Vacuum insulated mug that keeps beverages hot for 8 hours or cold for 12.",
-//         category: "Bottle & Cups"
-//     },
-//     {
-//         id: 4,
-//         name: "Smart Fitness Tracker",
-//         description: "Tracks heart rate, steps, sleep, and syncs with your phone via Bluetooth.",
-//         category: "Electronic"
-//     },
-//     {
-//         id: 5,
-//         name: "Premium Notebook Set",
-//         description: "Hardcover notebook with smooth acid-free paper, perfect for journaling and note-taking.",
-//         category: "Stationery"
-//     },
-//     {
-//         id: 1,
-//         name: "Waterproof Jacket",
-//         description: "Breathable and lightweight jacket with a hood, perfect for rainy weather.",
-//         category: "Clothing"
-//     },
-//     {
-//         id: 2,
-//         name: "Wireless Charging Pad",
-//         description: "Fast wireless charger compatible with iPhone, Samsung, and other Qi-enabled devices.",
-//         category: "Electronic"
-//     },
-//     {
-//         id: 3,
-//         name: "Stainless Steel Mug",
-//         description: "Vacuum insulated mug that keeps beverages hot for 8 hours or cold for 12.",
-//         category: "Bottle & Cups"
-//     },
-//     {
-//         id: 4,
-//         name: "Smart Fitness Tracker",
-//         description: "Tracks heart rate, steps, sleep, and syncs with your phone via Bluetooth.",
-//         category: "Electronic"
-//     },
-//     {
-//         id: 5,
-//         name: "Premium Notebook Set",
-//         description: "Hardcover notebook with smooth acid-free paper, perfect for journaling and note-taking.",
-//         category: "Stationery"
-//     }
-// ];
-
-
-
-
-// interface ProductPageProps {
-//     products: ProductInterface[];
-// }
-
-// const ProductPage: React.FC = () => {
-//     return (
-//         <Box
-//             sx={{ width: '100%',px:'0'}}
-//         >
-//             <Box
-//                 sx={{
-//                     height: '80vh',
-//                     overflowY: 'auto',
-//                     scrollbarWidth: 'none',
-//                     '&::-webkit-scrollbar': {
-//                         width: 1,
-//                     },
-//                     '&::-webkit-scrollbar-thumb': {
-//                         backgroundColor: 'rgba(0,0,0,0.2)',
-//                         borderRadius: 3,
-//                     },
-//                     display: 'flex',
-//                     flexWrap: 'wrap',
-//                     justifyContent: 'flex-start', // Change this to flex-start
-//                     gap: 0,
-//                     marginTop: 2,
-//                 }}
-//             >
-//                 {products.map((product) => (
-//                     <Box
-//                         key={product.id}
-//                         sx={{
-//                             // flexGrow: 1,
-//                             // flexShrink: 1,
-//                             flexBasis: {
-//                                 xs: '50%%',      // 1 card per row on xs
-//                                 sm: '33.33%',       // 2 cards per row on sm
-//                                 md: '33.33%',    // 3 cards per row on md
-//                                 lg: '25%',       // 4 cards per row on lg
-//                             },
-//                             maxWidth: {
-//                                 xs: '100%',
-//                                 sm: '50%',
-//                                 md: '33.33%',
-//                                 lg: '25%',
-//                             },
-//                             display: 'flex',
-//                             justifyContent: 'center',
-//                             boxSizing: 'border-box',
-//                         }}
-//                     >
-//                         <Card product={product} />
-//                     </Box>
-//                 ))}
-//             </Box>
-//         </Box>
-
-
-//     );
-// };
-
-// export default ProductPage;
-
-
-
 import React from 'react';
 import ProductCard from './ProductCard';
 import { Box, Button } from '@mui/material';
 
 interface ProductInterface {
-  id: number;
+  productId: number;
   name: string;
   description: string;
-  category: string;
+  categoryName: string;
+  imageUrl:string
 }
 
-const products: ProductInterface[] = [
+const products = [
   {
     id: 1,
     name: "Waterproof Jacket",
@@ -214,7 +73,10 @@ const products: ProductInterface[] = [
   },
 ];
 
-const ProductPage: React.FC = () => {
+interface ProductPageProp{
+  products:ProductInterface[]
+}
+const ProductPage: React.FC<ProductPageProp> = ({products}) => {
   return (
     <Box sx={{ width: '100%', px: 0, maxWidth: 1200, mx: 'auto' }}>
       <Box
@@ -238,7 +100,7 @@ const ProductPage: React.FC = () => {
       >
         {products.map((product) => (
           <Box
-            key={product.id}
+            key={product.productId}
             sx={{
               flexBasis: {
                 xs: '100%',    // 1 per row on xs
