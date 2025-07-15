@@ -1,5 +1,5 @@
 import ProductList from './page/ProductList'
-import CreateProduct from './page/CreateProduct'
+import CreateProduct from './component/CreateProduct'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ProductDetails from './component/ProductDetails'
 import UpdateProduct from './page/UpdateProduct'

@@ -11,141 +11,284 @@ import {
   InputLabel,
   FormControl,
   CircularProgress,
+  Card,
+  CardContent,
+  Alert,
+  Grid,
+  Chip,
+  Stack,
 } from "@mui/material";
+import { Search, FilterList } from "@mui/icons-material";
 import ProductTable, { type IProductUI } from "../component/ProductTable";
 
-const ProductList = () => {
+const ProductList: React.FC = () => {
   const [products, setProducts] = useState<IProductUI[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-
   const [sortField, setSortField] = useState<keyof IProductUI | "">("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/app/product/list");
-        const data = res.data.data;
-console.log(data);
-        const uniqueIds = new Set();
-        const filtered = data.filter((item: IProductUI) => {
-          if (uniqueIds.has(item.product_id)) return false;
-          uniqueIds.add(item.product_id);
-          return true;
-        });
+        setLoading(true);
+        const response = await axios.get("http://localhost:3000/app/product/list");
+        const data = response.data.data;
 
-        setProducts(filtered);
-
-        const categoryList = Array.from(
-          new Set(filtered.map((p) => p.category_name).filter(Boolean))
+        const uniqueProducts = data.filter(
+          (item: IProductUI, index: number, self: IProductUI[]) =>
+            index === self.findIndex((p) => p.product_id === item.product_id)
         );
-        setCategories(categoryList);
+
+        setProducts(uniqueProducts);
+
+        const uniqueCategories = Array.from(
+          new Set(uniqueProducts.map((p) => p.category_name).filter(Boolean))
+        );
+        setCategories(uniqueCategories);
+        setError(null);
       } catch (err: any) {
-        setError(err.message || "Error loading products");
+        setError(err.message || "Failed to load products");
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    fetchProducts();
   }, []);
 
   const handleDelete = async (id: string) => {
     try {
+      setDeleteLoading(id);
       await axios.delete(`http://localhost:3000/app/product/soft-delete/${id}`);
-      setProducts(products.filter((p) => p.product_id !== id));
+      setProducts((prev) => prev.filter((p) => p.product_id !== id));
     } catch (err: any) {
       setError(err.message || "Delete failed");
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
   const handleSort = (field: keyof IProductUI) => {
+    setSortOrder((prev) => (sortField === field && prev === "asc" ? "desc" : "asc"));
     setSortField(field);
-    setSortOrder(sortField === field && sortOrder === "asc" ? "desc" : "asc");
   };
 
-  const filtered = products.filter((p) =>
-    p.product_name.toLowerCase().includes(search.toLowerCase()) &&
-    (categoryFilter ? p.category_name === categoryFilter : true)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(0);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<{ value: unknown }>) => {
+    setCategoryFilter(e.target.value as string);
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    setSearch("");
+    setCategoryFilter("");
+    setSortField("");
+    setSortOrder("asc");
+    setPage(0);
+  };
+
+  const filteredProducts = products.filter((product) =>
+    product.product_name.toLowerCase().includes(search.toLowerCase()) &&
+    (categoryFilter ? product.category_name === categoryFilter : true)
   );
 
-  const sorted = [...filtered].sort((a, b) => {
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (!sortField) return 0;
-    const aVal = a[sortField], bVal = b[sortField];
+
+    const aVal = a[sortField];
+    const bVal = b[sortField];
+
     if (typeof aVal === "number" && typeof bVal === "number") {
       return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
     }
+
     if (typeof aVal === "string" && typeof bVal === "string") {
       return sortOrder === "asc"
         ? aVal.localeCompare(bVal)
         : bVal.localeCompare(aVal);
     }
+
     return 0;
   });
 
-  const paginated = sorted.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedProducts = sortedProducts.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Typography color="error">{error}</Typography>;
+  const hasActiveFilters = search || categoryFilter;
+
+  if (loading) {
+    return (
+      <Box sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "60vh"
+      }}>
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Product List
-      </Typography>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <TextField
-          size="small"
-          label="Search by Name"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+    <Box sx={{ 
+      height: "100vh", 
+      display: "flex", 
+      flexDirection: "column",
+      overflow: "hidden"
+    }}>
+      {/* Fixed Header */}
+      <Box
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+          backgroundColor: "background.paper",
+          borderBottom: 1,
+          borderColor: "divider",
+          px: { xs: 2, md: 4 },
+          py: 2,
+          boxShadow: 1
+        }}
+      >
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{
+            fontWeight: 700,
+            color: "text.primary",
+            mb: 0.5
           }}
-        />
-        <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={categoryFilter}
-            label="Category"
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setPage(0);
-            }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {categories.map((cat) => (
-              <MenuItem key={cat} value={cat}>
-                {cat}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        >
+          Product List
+        </Typography>
       </Box>
 
-      <ProductTable
-        products={paginated}
-        count={sorted.length}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
+      {/* Fixed Filters */}
+      <Box
+        sx={{
+          position: "sticky",
+          top: "72px",
+          zIndex: 999,
+          backgroundColor: "background.paper",
+          borderBottom: 1,
+          borderColor: "divider",
+          px: { xs: 2, md: 4 },
+          py: 2
         }}
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-        onDelete={handleDelete}
-      />
+      >
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              label="Search Products"
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={search}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />
+              }}
+              placeholder="Search by product name..."
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Category Filter</InputLabel>
+              <Select
+                value={categoryFilter}
+                label="Category Filter"
+                onChange={handleCategoryChange}
+              >
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {hasActiveFilters && (
+                <Chip
+                  label="Clear Filters"
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  onClick={clearFilters}
+                  onDelete={clearFilters}
+                />
+              )}
+              <Chip
+                label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? 's' : ''}`}
+                color="primary"
+                size="small"
+                variant="outlined"
+              />
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Scrollable Table Container - FIXED */}
+      <Box 
+        sx={{ 
+          flex: 1, 
+          overflow: "hidden", 
+          px: { xs: 2, md: 4 }, 
+          py: 2,
+          display: "flex",
+          flexDirection: "column"
+        }}
+      >
+        <Card sx={{ 
+          height: "100%", 
+          display: "flex", 
+          flexDirection: "column",
+          overflow: "hidden"
+        }}>
+          <ProductTable
+            products={paginatedProducts}
+            count={sortedProducts.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+            onDelete={handleDelete}
+            deleteLoading={deleteLoading}
+          />
+        </Card>
+      </Box>
     </Box>
   );
 };
