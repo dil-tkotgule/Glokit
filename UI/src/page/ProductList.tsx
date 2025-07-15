@@ -12,14 +12,15 @@ import {
   FormControl,
   CircularProgress,
   Card,
-  CardContent,
   Alert,
   Grid,
   Chip,
   Stack,
+  Button,
 } from "@mui/material";
-import { Search, FilterList } from "@mui/icons-material";
+import { Search, Add } from "@mui/icons-material";
 import ProductTable, { type IProductUI } from "../component/ProductTable";
+import { useNavigate } from "react-router-dom";
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<IProductUI[]>([]);
@@ -34,6 +35,8 @@ const ProductList: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -132,24 +135,28 @@ const ProductList: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "60vh"
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
         <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ 
-      height: "100vh", 
-      display: "flex", 
-      flexDirection: "column",
-      overflow: "hidden"
-    }}>
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       {/* Fixed Header */}
       <Box
         sx={{
@@ -161,20 +168,30 @@ const ProductList: React.FC = () => {
           borderColor: "divider",
           px: { xs: 2, md: 4 },
           py: 2,
-          boxShadow: 1
+          boxShadow: 1,
         }}
       >
-        <Typography
-          variant="h5"
-          component="h1"
-          sx={{
-            fontWeight: 700,
-            color: "text.primary",
-            mb: 0.5
-          }}
-        >
-          Product List
-        </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography
+            variant="h5"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+            }}
+          >
+            Product List
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            onClick={() => navigate("/create")}
+          >
+            Create Product
+          </Button>
+        </Box>
       </Box>
 
       {/* Fixed Filters */}
@@ -187,10 +204,9 @@ const ProductList: React.FC = () => {
           borderBottom: 1,
           borderColor: "divider",
           px: { xs: 2, md: 4 },
-          py: 2
+          py: 2,
         }}
       >
-        {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
@@ -207,14 +223,14 @@ const ProductList: React.FC = () => {
               value={search}
               onChange={handleSearchChange}
               InputProps={{
-                startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />
+                startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />,
               }}
               placeholder="Search by product name..."
             />
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <FormControl size="small" fullWidth>
+            <FormControl size="small" sx={{ minWidth: 250 }}>
               <InputLabel>Category Filter</InputLabel>
               <Select
                 value={categoryFilter}
@@ -244,7 +260,9 @@ const ProductList: React.FC = () => {
                 />
               )}
               <Chip
-                label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? 's' : ''}`}
+                label={`${sortedProducts.length} Product${
+                  sortedProducts.length !== 1 ? "s" : ""
+                }`}
                 color="primary"
                 size="small"
                 variant="outlined"
@@ -254,23 +272,25 @@ const ProductList: React.FC = () => {
         </Grid>
       </Box>
 
-      {/* Scrollable Table Container - FIXED */}
-      <Box 
-        sx={{ 
-          flex: 1, 
-          overflow: "hidden", 
-          px: { xs: 2, md: 4 }, 
+      {/* Table Section */}
+      <Box
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          px: { xs: 2, md: 4 },
           py: 2,
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
         }}
       >
-        <Card sx={{ 
-          height: "100%", 
-          display: "flex", 
-          flexDirection: "column",
-          overflow: "hidden"
-        }}>
+        <Card
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
           <ProductTable
             products={paginatedProducts}
             count={sortedProducts.length}
