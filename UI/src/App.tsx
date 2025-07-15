@@ -5,6 +5,7 @@ import ProductDetails from './component/ProductDetails'
 import UpdateProduct from './page/UpdateProduct'
 import SidePannel from './component/SidePannel'
 import HomePage from '../src/component/User/HomePage'
+import Login from './page/Login'
 
 function App() {
 

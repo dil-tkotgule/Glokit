@@ -1,12 +1,18 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+} from "@mui/material";
 
 interface NavbarProps {
   probe?: string;
+  onLoginClick?: () => void; // Optional click handler for Login
 }
 
-const Navbar: React.FC<NavbarProps> = ({ probe }) => (
+const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => (
   <AppBar
     position="fixed"
     elevation={1}
@@ -14,7 +20,6 @@ const Navbar: React.FC<NavbarProps> = ({ probe }) => (
       zIndex: (theme) => theme.zIndex.drawer + 1,
       backgroundColor: "#1a1a1a",
       color: "#fff",
-      
     }}
   >
     <Toolbar
@@ -22,64 +27,39 @@ const Navbar: React.FC<NavbarProps> = ({ probe }) => (
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-      }}>
-      
+      }}
+    >
+      {/* Left: Logo/Title */}
       <Typography variant="h6" noWrap fontWeight="bold">
         Admin
       </Typography>
-      <Typography
-        variant="subtitle1"
-        sx={{ ml: 2, color: "#fff", justifySelf: "end" }}
-      >
-        {probe}
-      </Typography>
+
+      {/* Right: Probe info and Login */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {probe && (
+          <Typography variant="subtitle1" sx={{ color: "#fff" }}>
+            {probe}
+          </Typography>
+        )}
+
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={onLoginClick}
+          sx={{
+            borderColor: "#fff",
+            color: "#fff",
+            textTransform: "none",
+            "&:hover": {
+              borderColor: "#ccc",
+            },
+          }}
+        >
+          Login
+        </Button>
+      </Box>
     </Toolbar>
   </AppBar>
 );
 
 export default Navbar;
-// // Common text styles
-// const navTextStyle = {
-//   fontFamily: 'Roboto, sans-serif',
-//   fontWeight: 500,
-//   fontSize: '1rem',
-//   textTransform: 'none',
-// };
-
-// const menuTextStyle = {
-//   fontFamily: 'Roboto, sans-serif',
-//   fontWeight: 500,
-//   fontSize: '1rem',
-//   textAlign: 'center',
-//   color: 'inherit',
-//   textDecoration: 'none',
-//   display: 'block',
-//   width: '100%',
-// };
-
-// function ResponsiveAppBar() {
-//   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-//   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-
-//   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-//     setAnchorElNav(event.currentTarget);
-//   };
-
-//   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-//     setAnchorElUser(event.currentTarget);
-//   };
-
-//   const handleCloseNavMenu = () => {
-//     setAnchorElNav(null);
-//   };
-
-//   const handleCloseUserMenu = () => {
-//     setAnchorElUser(null);
-//   };
-
-//   return (
-
-//   );
-// }
-
-// export default ResponsiveAppBar;
