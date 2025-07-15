@@ -16,11 +16,17 @@ const SidePannel: React.FC<SidePanelProps> = ({ children }) => {
   const isLoginPage = location.pathname === '/login';
 
   // Get username from localStorage or default to "Guest"
-  const probe = localStorage.getItem('username') 
+  let probe = localStorage.getItem('username') 
 
   const handleLoginClick = () => {
     navigate('/login');
   };
+
+  // Example probe value
+  // take the username from cokies or localStorage
+  // const probe = .getItem('username') || 'Guest';
+  
+   probe = '';
 
   return (
     <Box sx={{ display: 'flex' }}>

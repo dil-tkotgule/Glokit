@@ -27,6 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => (
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+
       }}
     >
       {/* Left: Logo/Title */}
@@ -58,8 +59,14 @@ const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => (
           Login
         </Button>
       </Box>
+
+     
+   
+
     </Toolbar>
   </AppBar>
 );
 
-export default Navbar;
+
+export default Navbar;  
+
