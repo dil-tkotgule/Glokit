@@ -1,5 +1,4 @@
 // src/pages/ProductList.tsx
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -11,12 +10,13 @@ import {
   InputLabel,
   FormControl,
   CircularProgress,
-  Card,
   Alert,
   Grid,
   Chip,
   Stack,
   Button,
+  Card,
+  Paper,
 } from "@mui/material";
 import { Search, Add } from "@mui/icons-material";
 import ProductTable, { type IProductUI } from "../component/ProductTable";
@@ -84,24 +84,6 @@ const ProductList: React.FC = () => {
     setSortField(field);
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setPage(0);
-  };
-
-  const handleCategoryChange = (e: React.ChangeEvent<{ value: unknown }>) => {
-    setCategoryFilter(e.target.value as string);
-    setPage(0);
-  };
-
-  const clearFilters = () => {
-    setSearch("");
-    setCategoryFilter("");
-    setSortField("");
-    setSortOrder("asc");
-    setPage(0);
-  };
-
   const filteredProducts = products.filter((product) =>
     product.product_name.toLowerCase().includes(search.toLowerCase()) &&
     (categoryFilter ? product.category_name === categoryFilter : true)
@@ -149,79 +131,46 @@ const ProductList: React.FC = () => {
   }
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      {/* Fixed Header */}
+    <Box sx={{ p: { xs: 2, md: 4 }, width: "100%" }}>
+      {/* Header */}
       <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
-          backgroundColor: "background.paper",
-          borderBottom: 1,
-          borderColor: "divider",
-          px: { xs: 2, md: 4 },
-          py: 2,
-          boxShadow: 1,
-        }}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={1}
+        p={2}
+        bgcolor={'white'}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography
-            variant="h5"
-            component="h1"
-            sx={{
-              fontWeight: 700,
-              color: "text.primary",
-            }}
-          >
-            Product List
-          </Typography>
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Add />}
-            onClick={() => navigate("/create")}
-          >
-            Create Product
-          </Button>
-        </Box>
+        <Typography variant="h5" fontWeight="bold">
+          Product List
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => navigate("/create")}
+        >
+          Create Product
+        </Button>
       </Box>
 
-      {/* Fixed Filters */}
-      <Box
-        sx={{
-          position: "sticky",
-          top: "72px",
-          zIndex: 999,
-          backgroundColor: "background.paper",
-          borderBottom: 1,
-          borderColor: "divider",
-          px: { xs: 2, md: 4 },
-          py: 2,
-        }}
-      >
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 2 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
-
-        <Grid container spacing={2} alignItems="center">
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               label="Search Products"
-              variant="outlined"
-              size="small"
               fullWidth
+              size="small"
               value={search}
-              onChange={handleSearchChange}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
               InputProps={{
                 startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />,
               }}
@@ -230,24 +179,31 @@ const ProductList: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <FormControl size="small" sx={{ minWidth: 250 }}>
-              <InputLabel>Category Filter</InputLabel>
-              <Select
-                value={categoryFilter}
-                label="Category Filter"
-                onChange={handleCategoryChange}
-              >
-                <MenuItem value="">All Categories</MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+           <FormControl
+  size="small"
+  sx={{ minWidth: 240, width: "100%" }} // Wider minimum width
+>
+  <InputLabel>Category Filter</InputLabel>
+  <Select
+    value={categoryFilter}
+    label="Category Filter"
+    onChange={(e) => {
+      setCategoryFilter(e.target.value as string);
+      setPage(0);
+    }}
+  >
+    <MenuItem value="">All Categories</MenuItem>
+    {categories.map((category) => (
+      <MenuItem key={category} value={category}>
+        {category}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} display="flex" alignItems="center">
             <Stack direction="row" spacing={1} flexWrap="wrap">
               {hasActiveFilters && (
                 <Chip
@@ -255,8 +211,20 @@ const ProductList: React.FC = () => {
                   variant="outlined"
                   color="secondary"
                   size="small"
-                  onClick={clearFilters}
-                  onDelete={clearFilters}
+                  onClick={() => {
+                    setSearch("");
+                    setCategoryFilter("");
+                    setSortField("");
+                    setSortOrder("asc");
+                    setPage(0);
+                  }}
+                  onDelete={() => {
+                    setSearch("");
+                    setCategoryFilter("");
+                    setSortField("");
+                    setSortOrder("asc");
+                    setPage(0);
+                  }}
                 />
               )}
               <Chip
@@ -270,45 +238,27 @@ const ProductList: React.FC = () => {
             </Stack>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
-      {/* Table Section */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: "hidden",
-          px: { xs: 2, md: 4 },
-          py: 2,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Card
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
+      {/* Product Table */}
+      <Card sx={{ height: "100%", overflow: "hidden" }}>
+        <ProductTable
+          products={paginatedProducts}
+          count={sortedProducts.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={(_, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
           }}
-        >
-          <ProductTable
-            products={paginatedProducts}
-            count={sortedProducts.length}
-            page={page}
-            rowsPerPage={rowsPerPage}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            onDelete={handleDelete}
-            deleteLoading={deleteLoading}
-          />
-        </Card>
-      </Box>
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          onDelete={handleDelete}
+          deleteLoading={deleteLoading}
+        />
+      </Card>
     </Box>
   );
 };

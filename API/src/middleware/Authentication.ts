@@ -1,16 +1,22 @@
+// src/middlewares/Authentication.ts
+
 import express, { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import session from 'express-session';
+import pgSession from 'connect-pg-simple';
+import { Pool } from 'pg';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { pool } from '../config/db';
+dotenv.config(); // Load environment variables
 
-dotenv.config(); // Load .env variables
-
-// Extend Express session and request types
+// Extend Session and Request types
 declare module 'express-session' {
   interface SessionData {
     user?: {
       id: string;
-      role: 'admin' | 'user';
+      role: "hr" | "admin" | "fresher";
+      name:string;
       email?: string;
     };
   }
@@ -21,8 +27,9 @@ declare global {
     interface Request {
       user?: {
         id: string;
-        role: 'admin' | 'user';
+        role: "hr" | "admin" | "fresher";
         email?: string;
+        name:string;
       };
     }
   }
@@ -30,68 +37,90 @@ declare global {
 
 // Constants
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'default-session-secret';
+
 if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined in .env');
+  throw new Error('❌ JWT_SECRET is missing in your .env file');
 }
 
-// Session setup (Put this in your main app.ts or server.ts)
+// PostgreSQL session store
+const PgSession = pgSession(session);
+// const pgPool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+// });
+
 export const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET || 'default-session-secret',
+  store: new PgSession({
+    pool: pool,
+    tableName: 'user_sessions',
+  }),
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set true if using HTTPS
+    secure: false, // true if HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 1 day
+    sameSite: 'lax',
   },
 });
 
-// Middleware: Authenticate request using session or JWT
-export function authenticate(req: Request, res: Response, next: NextFunction) {
-  // Check session
+// ✅ Add cookie parser (used for JWT fallback)
+export const cookieMiddleware = cookieParser();
+
+// 🔐 Authentication middleware
+export function authenticate(req: Request, res: Response, next: NextFunction):void {
+  // Check session first
   if (req.session?.user) {
     req.user = req.session.user;
-    return next();
+     next();
+     return;
   }
 
-  // Check token from cookies
+  // Fallback: Check JWT from cookie
   const token = req.cookies?.token;
   if (!token) {
-    return res.status(401).json({ message: 'Authentication token required' });
+     res.status(401).json({ message: 'Authentication required' });return;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
-      role: 'admin' | 'user';
+      role: "hr" | "admin" | "fresher";
       email?: string;
+      name:string;
     };
+
     req.user = decoded;
-    req.session.user = decoded; // optional session set
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    req.session.user = decoded;
+     next();
+     return;
+  } catch (err) {
+     res.status(401).json({ message: 'Invalid or expired token' });
+     return
   }
 }
 
-// Middleware: Require admin role
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin access required' });
-  }
-  next();
-}
+// export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+//   if (!req.user) {
+//     return res.status(401).json({ message: 'Not authenticated' });
+//   }
 
-// Middleware: Require user (or admin) role
-export function requireUser(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-  if (req.user.role !== 'user' && req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'User access required' });
-  }
-  next();
-}
+//   if (req.user.role !== 'admin') {
+//     return res.status(403).json({ message: 'Admin access required' });
+//   }
+
+//   return next();
+// }
+
+// export function requireUser(req: Request, res: Response, next: NextFunction) {
+//   if (!req.user) {
+//     return res.status(401).json({ message: 'Not authenticated' });
+//   }
+
+//   if (req.user.role !== 'hr' && req.user.role !== 'admin' && req.user.role!=='fresher') {
+//     return res.status(403).json({ message: 'User access required' });
+//   }
+
+//   return next();
+// }

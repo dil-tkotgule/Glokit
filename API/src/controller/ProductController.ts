@@ -59,6 +59,10 @@ export class ProductController {
 
   public async updateProduct(req: Request, res: Response): Promise<void> {
     try {
+      console.log('triveni')
+      console.log(req.body)
+      console.log(req.files)
+      console.log('triveni')
       const { id } = req.params;
       const product: IProductUI = req.body;
       product.product_id = Number(id);

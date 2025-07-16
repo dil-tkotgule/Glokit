@@ -6,29 +6,37 @@ import { Box } from '@mui/material';
 import {useEffect } from 'react'
 
 const categories = ["A", "B", "C"];
+
 interface ProductInterface {
-  productId: number;
-  name: string;
-  description: string;
-  categoryName: string;
-  imageUrl:string
+  product_id: string;
+  product_name: string;
+  product_description: string;
+  product_price: number;
+  category_name: string;
+  product_category_id: number;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+  image_url: string;
 }
 const HomePage: React.FC = () => {
   const [products,setProducts] = useState<ProductInterface[]>([]);
   useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch('http://localhost:3000/list');
+                const response = await fetch('http://localhost:3000/app/product/list');
                 if (!response.ok) throw new Error('Failed to fetch products');
                 const jsonData = await response.json();
-                setProducts(jsonData.products);
+                setProducts(jsonData.data);
+                console.log(jsonData.data)
             } catch (error) {
                 console.error(error);
             }
            
         }
         fetchProducts();
-    })
+    },[])
   return (
     <Box
       sx={{

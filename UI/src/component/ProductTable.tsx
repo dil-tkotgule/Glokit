@@ -161,7 +161,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
         overflow: "auto",
         minHeight: 0 // Important for flex child to shrink
       }}>
-        <Table stickyHeader sx={{ minWidth: 900 }}>
+        <Table stickyHeader sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell
@@ -376,7 +376,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
           borderColor: "divider",
           backgroundColor: theme.palette.grey[50],
           flexShrink: 0, // Prevent pagination from shrinking
-          minHeight: 52, // Ensure minimum height
+          minHeight: 42, // Ensure minimum height
         }}
         labelRowsPerPage="Rows per page:"
         labelDisplayedRows={({ from, to, count }) =>

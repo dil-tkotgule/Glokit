@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,12 @@ import {
   Select,
   Typography,
   FormHelperText,
+  IconButton,
+  Paper,
+  Grid,
+  Divider,
 } from '@mui/material';
+import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 
 import type { SelectChangeEvent } from '@mui/material';
 
@@ -24,7 +29,7 @@ export interface IFormData {
   price: number;
   description: string;
   category_name: string;
-  thumbnails?: FileList | null;
+  thumbnails?: File[];
 }
 
 interface IFormErrors {
@@ -35,81 +40,138 @@ interface IFormErrors {
   thumbnails?: string;
 }
 
+interface IImagePreview {
+  src: string;
+  name: string;
+  size: string;
+  file: File;
+}
+
+const CATEGORIES = [
+  { value: 'Choose', label: 'Choose...' },
+  { value: 'Electronics', label: 'Electronics' },
+  { value: 'Clothing', label: 'Clothing' },
+  { value: 'Accessories', label: 'Accessories' },
+];
+
 const CreateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
     price: 0,
     description: '',
-    category_name: '',
-    thumbnails: null,
+    category_name: 'Choose',
+    thumbnails: [],
   });
 
   const [errors, setErrors] = useState<IFormErrors>({});
-  const [preview, setPreview] = useState<{ src: string; name: string; size: string }[]>([]);
+  const [previews, setPreviews] = useState<IImagePreview[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  const resetForm = useCallback(() => {
+    setFormData({
+      name: '',
+      price: 0,
+      description: '',
+      category_name: '',
+      thumbnails: [],
+    });
+    setPreviews([]);
+    setErrors({});
+  }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
-  ) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === 'price' ? Number(value) : value,
     }));
-    setErrors((prevData) => ({
-      ...prevData, [name]: ''
-    }));
+    setErrors((prev) => ({ ...prev, [name]: '' }));
+  }, []);
 
+  const validateImageFile = (file: File): string | null => {
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      return `File "${file.name}" exceeds the ${MAX_IMAGE_SIZE_MB}MB limit.`;
+    }
+    return null;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    if (files.length > MAX_IMAGES) {
-      setErrors(prev => ({ ...prev, thumbnails: 'Select no more than two images.' }));
+    const fileArray = Array.from(files);
+    const currentFiles = formData.thumbnails || [];
+
+    if (currentFiles.length + fileArray.length > MAX_IMAGES) {
+      setErrors(prev => ({
+        ...prev,
+        thumbnails: `You can only upload a maximum of ${MAX_IMAGES} images.`,
+      }));
       return;
     }
 
-    for (const file of Array.from(files)) {
-      if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-        setErrors(prevData => ({ ...prevData, thumbnails: 'Each image must be ≤ 5MB.' }));
+    for (const file of fileArray) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setErrors(prev => ({ ...prev, thumbnails: validationError }));
         return;
       }
     }
 
-    const previews = Array.from(files).map(file => ({
+    const newPreviews: IImagePreview[] = fileArray.map(file => ({
       src: URL.createObjectURL(file),
       name: file.name,
-      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+      file,
     }));
-    setPreview(previews);
-    setErrors(prevData => ({ ...prevData, thumbnails: '' }));
-    setFormData(prevData => ({ ...prevData, thumbnails: files }));
-  };
 
-  const validate = (): boolean => {
+    setPreviews(prev => [...prev, ...newPreviews]);
+    setFormData(prev => ({
+      ...prev,
+      thumbnails: [...(prev.thumbnails || []), ...fileArray],
+    }));
+    setErrors(prev => ({ ...prev, thumbnails: '' }));
+
+    e.target.value = '';
+  }, [formData.thumbnails]);
+
+  const handleImageDelete = useCallback((index: number) => {
+    const updatedPreviews = previews.filter((_, i) => i !== index);
+    const updatedFiles = (formData.thumbnails || []).filter((_, i) => i !== index);
+
+    URL.revokeObjectURL(previews[index].src);
+    setPreviews(updatedPreviews);
+    setFormData(prev => ({ ...prev, thumbnails: updatedFiles }));
+  }, [previews, formData.thumbnails]);
+
+  const validateForm = (): boolean => {
     const formErrors: IFormErrors = {};
 
-    if (formData.name.length < 2 || formData.name.length > 100 || !/^[a-zA-Z0-9 ]+$/.test(formData.name)) {
-      formErrors.name = 'Product name must be between 2 and 100 characters and alphanumeric';
+    if (!formData.name.trim()) {
+      formErrors.name = 'Product name is required.';
+    } else if (formData.name.length < 2 || formData.name.length > 100) {
+      formErrors.name = 'Name must be 2–100 characters.';
+    } else if (!/^[a-zA-Z0-9 ]+$/.test(formData.name)) {
+      formErrors.name = 'Only letters, numbers, and spaces are allowed.';
     }
 
-    if (!formData.price || isNaN(formData.price) || formData.price <= 0 || !Number.isInteger(formData.price)) {
-      formErrors.price = 'Enter a valid integer price greater than 0';
+    if (!formData.price || isNaN(formData.price) || formData.price <= 0) {
+      formErrors.price = 'Enter a valid price > 0.';
+    } else if (!Number.isInteger(formData.price)) {
+      formErrors.price = 'Price must be a whole number.';
     }
-
 
     if (!formData.category_name) {
-      formErrors.category_name = 'Category is required';
-    }
-    if (formData.description.length > 1000) {
-      formErrors.description = 'Description must be less than or equal to 1000 characters.';
+      formErrors.category_name = 'Select a category.';
     }
 
-    if (!formData.thumbnails || formData.thumbnails.length > 2) {
-      formErrors.thumbnails = 'Max 2 images allowed';
+    if (formData.description.length > 1000) {
+      formErrors.description = 'Max 1000 characters.';
+    }
+
+    if (!formData.thumbnails || formData.thumbnails.length === 0) {
+      formErrors.thumbnails = 'At least one image is required.';
     }
 
     setErrors(formErrors);
@@ -118,213 +180,205 @@ const CreateProduct: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validateForm()) return;
 
-    const form = new FormData();
-    form.append('product_name', formData.name);
-    form.append('product_price', formData.price.toString());
-    form.append('product_description', formData.description);
-    form.append('category_name', formData.category_name);
-
-    if (formData.thumbnails) {
-      Array.from(formData.thumbnails).forEach(file => {
-        form.append('thumbnails', file);
-      });
-    }
-
-    console.log(form);
-    setFormData({
-      name: '',
-      description: '',
-      price: 0,
-      category_name: '',
-      thumbnails: null,
-    });
+    setIsSubmitting(true);
 
     try {
+      const form = new FormData();
+      form.append('product_name', formData.name.trim());
+      form.append('product_price', formData.price.toString());
+      form.append('product_description', formData.description.trim());
+      form.append('category_name', formData.category_name);
+
+      formData.thumbnails?.forEach(file => form.append('thumbnails', file));
+
       await axios.post('http://localhost:3000/app/product/create', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       alert('Product created successfully!');
-      setFormData({
-        name: '',
-        description: '',
-        price: 0,
-        category_name: '',
-        thumbnails: null,
-      });
-      setErrors({});
+      resetForm();
       navigate('/');
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    } catch (err) {
+      console.error('Error creating product:', err);
+      alert('Failed to create product.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    previews.forEach(preview => URL.revokeObjectURL(preview.src));
+    navigate('/');
+  };
+
   return (
-    <Box
-      component="form"
-      noValidate
-      onSubmit={handleSubmit}
-      sx={{
-        mt: 2,
-        maxWidth: 1000,
-        mx: 'auto',
-        p: 4,
-        backgroundColor: '#fff',
-        borderRadius: 2,
-        boxShadow: 2,
-        height: "auto"
-      }}
-    >
-      <Typography variant="h5" gutterBottom
-        sx={{
-          mb: 2,
-          fontWeight: 250
-        }}
-      >
-        Create Product
+    <Paper elevation={3} sx={{ maxWidth: 1000, mx: 'auto', mt: 4, p: 4, borderRadius: 2 }}>
+      <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 500 }}>
+        Create New Product
       </Typography>
 
-      <Box display="flex" gap={2} mb={3}>
-        <TextField
-          required
-          label="Name"
-          name="name"
-          fullWidth
-          value={formData.name}
-          onChange={handleChange}
-          error={Boolean(errors.name)}
-          helperText={errors.name}
-        />
-        <TextField
-          required
-          label="price"
-          name="price"
-          type="number"
-          fullWidth
-          inputProps={{ step: 1, min: 1 }}
-          value={formData.price}
-          onChange={handleChange}
-          error={Boolean(errors.price)}
-          helperText={errors.price}
-        />
+      <Divider sx={{ mb: 3 }} />
+
+      <Box component="form" noValidate onSubmit={handleSubmit}>
+
+
+        <Grid container spacing={3}>
+
+          <Box display={'flex'} flexDirection={'column'} gap={2} >
+            {/* Name */}
+            <Box display={'flex'} gap={2}>
+              <Grid item xs={12} md={12} >
+                <TextField
+                  required fullWidth name="name" label="Product Name"
+                  value={formData.name} onChange={handleInputChange}
+                  error={!!errors.name} helperText={errors.name}
+                />
+              </Grid>
+
+              {/* Price */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  required fullWidth name="price" type="number" label="Price"
+                  value={formData.price || ''} onChange={handleInputChange}
+                  error={!!errors.price} helperText={errors.price}
+                  inputProps={{ min: 1, step: 1 }}
+                />
+              </Grid>
+            </Box>
+            {/* Description */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth multiline rows={4}
+                name="description" label="Description"
+                value={formData.description}
+                onChange={handleInputChange}
+                error={!!errors.description}
+                helperText={errors.description || `${formData.description.length}/1000`}
+              />
+            </Grid>
+            {/* Buttons */}
+            <Grid item xs={12}>
+              <Box display="flex" justifyContent="flex-start" gap={2}>
+                <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button variant="contained" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Creating...' : 'Create Product'}
+                </Button>
+              </Box>
+            </Grid>
+          </Box>
+
+
+          <Box display={'flex'} flexDirection={'column'}>
+
+            <Box display={'flex'} gap={2} flexDirection={'column'} md={12}>
+  {/* Category */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={!!errors.category_name} required>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category_name"
+                    value={formData.category_name}
+                    onChange={handleInputChange}
+                    fullWidth
+                    label="Category"
+                  >
+                    {CATEGORIES.map(opt => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.category_name}</FormHelperText>
+                </FormControl>
+              </Grid>
+
+              {/* Upload Images */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={!!errors.thumbnails}>
+               <Button
+  component="label"
+  variant="outlined"
+  startIcon={<CloudUploadIcon />}
+  sx={{ height: 56, pl: 4, pr: 4, minWidth: 400 }} // enough to fit 'Max images uploaded'
+  disabled={previews.length >= MAX_IMAGES}
+>
+  {previews.length >= MAX_IMAGES ? 'Max images uploaded' : 'Upload Images'}
+  <input
+    type="file"
+    accept="image/*"
+    multiple
+    hidden
+    onChange={handleFileChange}
+    disabled={previews.length >= MAX_IMAGES}
+  />
+</Button>
+
+                  <FormHelperText>
+                    {errors.thumbnails || `Max ${MAX_IMAGES} images, ${MAX_IMAGE_SIZE_MB}MB each`}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+            
+            </Box>
+
+
+            {/* Image Preview */}
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  minHeight: 160,
+                  border: '1px dashed #ccc',
+                  borderRadius: 2,
+                  p: 2,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  mt: 2,
+                  gap: 2,
+                  justifyContent: 'space-around'
+                }}
+              >
+                {previews.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No images selected
+                  </Typography>
+                ) : (
+                  previews.map((p, i) => (
+                    <Paper key={i} sx={{ width: 140, height: 140, position: 'relative', p: 1, overflow: 'hidden' }}>
+                      <IconButton
+                        onClick={() => handleImageDelete(i)}
+                        sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'white' }}
+                        size="small"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                      <img
+                        src={p.src}
+                        alt={`preview-${i}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }}
+                      />
+                      {/* <Typography variant="caption" noWrap>{p.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">{p.size}</Typography> */}
+                    </Paper>
+                  ))
+                )}
+              </Box>
+            </Grid>
+
+
+
+
+
+          </Box>
+
+
+        </Grid>
       </Box>
-
-      <Box mb={3}>
-        <TextField
-          label="Description"
-          name="description"
-          fullWidth
-          multiline
-          rows={3}
-          value={formData.description}
-          error={Boolean(errors.description)}
-          helperText={errors.description}
-          onChange={handleChange}
-        />
-      </Box>
-
-      <Box display="flex" gap={2} mb={3}>
-        <FormControl fullWidth required error={Boolean(errors.category_name)}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            name="category_name"
-            value={formData.category_name}
-            onChange={handleChange}
-            label="Category"
-          >
-            <MenuItem value="">Choose...</MenuItem>
-            <MenuItem value="1">Electronics</MenuItem>
-            <MenuItem value="2">Clothing</MenuItem>
-            <MenuItem value="3">Accessories</MenuItem>
-          </Select>
-          <FormHelperText>{errors.category_name}</FormHelperText>
-        </FormControl>
-
-        <FormControl fullWidth error={Boolean(errors.thumbnails)}>
-          <Button variant="outlined" component="label">
-            Choose Files
-            <input
-              type="file"
-              name="thumbnails"
-              accept="image/*"
-              multiple
-              hidden
-              onChange={handleFileChange}
-            />
-          </Button>
-
-          <FormHelperText>
-            Thumbnails (2 images, ≤5MB)
-            {errors.thumbnails && ` — ${errors.thumbnails}`}
-          </FormHelperText>
-
-         <Box mt={1} display="flex" gap={1} flexWrap="nowrap">
-  {preview.map((file, index) => (
-    <Box
-      key={index}
-      display="flex"
-      alignItems="center"
-      gap={1}
-      sx={{
-        p: 1,
-        borderRadius: 2,
-        border: '1px solid #ddd',
-        backgroundColor: '#fdfdfd',
-        width: 120, // adjust width to fit your images
-        justifyContent: 'center', // ensures content is centered
-      }}
-    >
-      <img
-        src={file.src}
-        alt={`preview-${index}`}
-        style={{
-          width: 60,
-          height: 60,
-          objectFit: 'cover',
-          borderRadius: 4,
-          border: '1px solid #ccc',
-        }}
-      />
-
-      <Box overflow="hidden">
-        <Typography
-          variant="body2"
-          noWrap
-          sx={{ fontSize: 13, color: 'green', fontWeight: 500 }}
-        >
-          {file.name}
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ fontSize: 11, color: 'gray' }}
-        >
-          {file.size}
-        </Typography>
-      </Box>
-    </Box>
-  ))}
-</Box>
-
-
-
-        </FormControl>
-
-      </Box>
-
-      <Box mt={2} display="flex" gap={2}>
-        <Button type="submit" variant="contained" color="primary">
-          Create
-        </Button>
-        <Button variant="outlined" href="/">
-          Cancel
-        </Button>
-      </Box>
-    </Box>
+    </Paper>
   );
 };
 
 export default CreateProduct;
-
-

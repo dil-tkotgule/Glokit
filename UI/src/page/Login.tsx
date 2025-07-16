@@ -12,13 +12,18 @@ import {
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import {type RootState, type  AppDispatch} from '../redux/store'
+import { useDispatch } from 'react-redux';
+import { setUser } from '../redux/slice';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
+  const navigate= useNavigate();
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState<{ userId?: string; password?: string; general?: string }>({});
-
+const dispatch=useDispatch();
     const validate = () => {
         const newErrors: typeof errors = {};
         if (!userId) newErrors.userId = 'User ID is required';
@@ -26,22 +31,56 @@ const Login: React.FC = () => {
         return newErrors;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+    }
+    setErrors({});
+    try {
+        const response = await fetch('http://localhost:3000/app/user/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+             credentials: 'include',
+            body: JSON.stringify({
+                email: userId,
+                password: password
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Login failed');
         }
-        setErrors({});
-        try {
-            // Replace with actual API call
-            // await loginApi({ userId, password });
-            // On success, redirect or update app state
-        } catch (err) {
-            setErrors({ general: 'Invalid credentials or server error.' });
-        }
-    };
+
+        const data = await response.json();
+        const user = data.data.user;
+
+   const userPayload = {
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    is_verified: user.is_verified
+};
+
+localStorage.setItem("user", JSON.stringify(userPayload));
+dispatch(setUser(userPayload));
+
+
+        console.log('Login successful:', data.data);
+
+        navigate('/'); // ✅ redirect after login
+
+    } catch (err: any) {
+        setErrors({ general: err.message || 'Invalid credentials or server error.' });
+    }
+};
+
+
 
     return (
         <Box

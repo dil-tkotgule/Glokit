@@ -10,15 +10,17 @@ class Database {
 
     constructor() {
         this.pool = new Pool({
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            host: process.env.DB_HOST,
-            port: Number(process.env.DB_PORT),
-            database: process.env.DB_NAME
+           user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  database: process.env.DB_NAME,
         });
 
         this.pool.connect()
             .then(() => {
+
+
                 console.log('[DB] Database connected');
             })
             .catch((err) => {

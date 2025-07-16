@@ -64,7 +64,7 @@ export class ProductRepository {
             WHERE p."id" = $1 and p."isDeleted" = FALSE`, [id]
         );
 
-        console.log("Fetched product by ID:", rows);
+        // console.log("Fetched product by ID:", rows);
         return rows.length > 0 ? rows : null;
     }
 

@@ -128,22 +128,26 @@ import {
   Typography,
   Button,
 } from '@mui/material';
-
 interface ProductInterface {
-  productId: number;
-  name: string;
-  description: string;
-  categoryName: string;
-  imageUrl:string
+  product_id: string;
+  product_name: string;
+  product_description: string;
+  product_price: number;
+  category_name: string;
+  product_category_id: number;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+  image_url: string;
 }
 
 const ProductCard: React.FC<{ product: ProductInterface }> = ({ product }) => {
   const [expanded, setExpanded] = useState(false);
   const toggleDescription = () => setExpanded(!expanded);
-
   const maxChars = 30;
-  const shouldTruncate = product.description.length > maxChars;
-  const shortText = product.description.slice(0, maxChars).trim();
+  const shouldTruncate = product.product_description.length > maxChars;
+  const shortText = product.product_description.slice(0, maxChars).trim();
 
   return (
     <Card
@@ -160,7 +164,9 @@ const ProductCard: React.FC<{ product: ProductInterface }> = ({ product }) => {
     >
       <CardMedia
         component="img"
-        image={image}
+        image={`http://localhost:3000/${product.image_url
+          .substring(product.image_url.indexOf("uploads"))
+          .replace(/\\/g, "/")}`}
         alt="Product Image"
         sx={{
           objectFit: 'contain',
@@ -183,7 +189,7 @@ const ProductCard: React.FC<{ product: ProductInterface }> = ({ product }) => {
             lineHeight: 1.3,
           }}
         >
-          {product.name}
+          {product.product_name}
         </Typography>
 
         <Typography
@@ -196,7 +202,7 @@ const ProductCard: React.FC<{ product: ProductInterface }> = ({ product }) => {
         >
           {expanded || !shouldTruncate ? (
             <>
-              {product.description}{' '}
+              {product.product_description}{' '}
               {shouldTruncate && (
                 <Button
                   variant="text"

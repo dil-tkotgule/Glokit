@@ -6,10 +6,12 @@ class UserRepository {
 
     // Get user by email for login (password check in service)
     public async getUserByEmail(email: string): Promise<UserDB | null> {
+        console.log(email)
         const { rows } = await pool.query(
             `SELECT * FROM users WHERE email = $1`,
             [email]
         );
+        console.log(rows)
         if (rows.length === 0) {
             return null;
         }
