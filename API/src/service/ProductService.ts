@@ -34,8 +34,8 @@ export class ProductService {
             console.log(product);
             product.product_name = validator.escape(validator.trim(String(product.product_name)));
             product.product_description = validator.escape(validator.trim(String(product.product_description)));
-            product.product_price = Number(product.product_price);
-            console.log(product.product_price);
+            product.product_quantity = Number(product.product_quantity);
+            console.log(product.product_quantity);
             // Joi validation for product fields
             const { error } = ProductValidation.createProductSchema().validate(product);
             if (error) {
@@ -86,8 +86,8 @@ console.log(files)
         // --- Sanitization ---
         product.product_name = validator.escape(validator.trim(String(product.product_name)));
         product.product_description = validator.escape(validator.trim(String(product.product_description)));
-        product.product_price = Number(product.product_price);
-        console.log(product.product_price)
+        product.product_quantity = Number(product.product_quantity);
+        console.log(product.product_quantity)
         // Joi validation for product fields
         const { error } = ProductValidation.updateProductSchema().validate(product);
         if (error) {
@@ -120,7 +120,7 @@ console.log(files)
                 id,
                 dbProduct.name,
                 dbProduct.description,
-                dbProduct.price,
+                dbProduct.quantity,
                 dbProduct.categoryId
             );
             await this.productRepository.deleteProductThumbnails(id);
@@ -151,7 +151,7 @@ console.log(files)
     //         product_id: db.productId,
     //         product_name: db.name,
     //         product_description: db.description,
-    //         product_price: db.price,
+    //         product_quantity: db.quantity,
     //         product_category_id: db.categoryId,
     //         created_by: db.createdBy,
     //         updated_by: db.updatedBy,
@@ -166,7 +166,7 @@ console.log(files)
     //         productId: ui.product_id,
     //         name: ui.product_name,
     //         description: ui.product_description,
-    //         price: ui.product_price,
+    //         quantity: ui.product_quantity,
     //         categoryId: categoryId,
     //         createdBy: ui.created_by || null,
     //         updatedBy: ui.updated_by,

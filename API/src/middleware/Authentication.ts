@@ -102,17 +102,20 @@ export function authenticate(req: Request, res: Response, next: NextFunction):vo
   }
 }
 
-// export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-//   if (!req.user) {
-//     return res.status(401).json({ message: 'Not authenticated' });
-//   }
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+     res.status(401).json({ message: 'Not authenticated' });
+     return;
+  }
 
-//   if (req.user.role !== 'admin') {
-//     return res.status(403).json({ message: 'Admin access required' });
-//   }
+  if (req.user.role !== 'admin') {
+     res.status(403).json({ message: 'Admin access required' });
+     return;
+  }
 
-//   return next();
-// }
+   next();
+   return;
+}
 
 // export function requireUser(req: Request, res: Response, next: NextFunction) {
 //   if (!req.user) {

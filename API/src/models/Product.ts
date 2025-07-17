@@ -2,7 +2,7 @@ export interface IProductUI {
     product_id: number;
     product_name: string;
     product_description: string;
-    product_price: number;
+    product_quantity: number;
     category_name: string;
     product_category_id?: number;
     created_by?: string | null;
@@ -15,7 +15,7 @@ export interface IProductDB {
     productId: number;
     name: string;
     description: string;
-    price: number;
+    quantity: number;
     categoryId: number;
     createdBy?: string | null;
     updatedBy?: string | null;
@@ -28,7 +28,7 @@ export interface IProductUIThumbnail {
     product_id: number,
     product_name: string,
     product_description: string,
-    product_price: number,
+    product_quantity: number,
     product_category_id: number,
     category_name: string,
     image_url: string, // Optional, if needed
@@ -43,7 +43,7 @@ export interface IProductDBThumbnail {
     productId: number;
     name: string;
     description: string;
-    price: number;
+    quantity: number;
     categoryId: number;
     createdAt?: Date | null;
     updatedAt?: Date | null;

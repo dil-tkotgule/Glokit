@@ -8,7 +8,7 @@ export function mapProductDBToUI(db: IProductDB): IProductUI {
         product_id: db.productId,
         product_name: db.name,
         product_description: db.description,
-        product_price: db.price,
+        product_quantity: db.quantity,
         product_category_id: db.categoryId,
         category_name: "", // or null, depending on IProductUI definition
         created_by: db.createdBy,
@@ -22,7 +22,7 @@ export function mapProductListDBToUI(db: IProductDBThumbnail[]): IProductUIThumb
         product_id: product.productId,
         product_name: product.name,
         product_description: product.description,
-        product_price: product.price,
+        product_quantity: product.quantity,
         product_category_id: product.categoryId,
         category_name: product.categoryName, // or null, depending on IProductUI definition
         image_url: product.imageUrl ?? "", // Provide a default empty string if undefined
@@ -36,7 +36,7 @@ export function mapProductUIToDB(ui: IProductUI): IProductDB {
         productId: ui.product_id,
         name: ui.product_name,
         description: ui.product_description,
-        price: ui.product_price,
+        quantity: ui.product_quantity,
         categoryId: ui.product_category_id !== undefined ? ui.product_category_id : 0, // or handle as needed
         createdBy: ui.created_by || null,
         updatedBy: ui.updated_by,

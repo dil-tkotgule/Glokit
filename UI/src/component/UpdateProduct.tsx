@@ -9,7 +9,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 interface IFormData {
   name: string;
   description: string;
-  price: number | null;
+  quantity: number | null;
   category_name: string;
   thumbnails?: FileList | null;
 }
@@ -23,7 +23,7 @@ interface IPreview {
 interface IFormErrors {
   name?: string;
   description?: string;
-  price?: string;
+  quantity?: string;
   category_name?: string;
   thumbnails?: string;
 }
@@ -35,7 +35,7 @@ const UpdateProduct = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
     description: '',
-    price: null,
+    quantity: null,
     category_name: '',
     thumbnails: null,
   });
@@ -56,7 +56,7 @@ const [existingPreview, setExistingPreview] = useState<IPreview[]>([]);
 //       setFormData({
 //         name: data.product_name,
 //         description: data.product_description,
-//         price: Number(data.product_price),
+//         quantity: Number(data.product_quantity),
 //         category_name: data.category_name,
 //         thumbnails: null,
 //       });
@@ -79,7 +79,7 @@ console.log(data)
         setFormData({
           name: data.product_name,
           description: data.product_description,
-          price: Number(data.product_price),
+          quantity: Number(data.product_quantity),
           category_name: data.category_name,
           thumbnails: null,
         });
@@ -102,7 +102,7 @@ console.log(data)
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name as string]: name === 'price' ? Number(value) : value
+      [name as string]: name === 'quantity' ? Number(value) : value
     }));
   };
 
@@ -134,8 +134,8 @@ console.log(data)
       valid = false;
     }
 
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = 'Price must be greater than 0';
+    if (!formData.quantity || formData.quantity <= 0) {
+      newErrors.quantity = 'quantity must be greater than 0';
       valid = false;
     }
 
@@ -170,7 +170,7 @@ console.log(data)
     const form = new FormData();
     form.append('product_name', formData.name);
     form.append('product_description', formData.description);
-    form.append('product_price', formData.price?.toString() || '');
+    form.append('product_quantity', formData.quantity?.toString() || '');
     form.append('category_name', formData.category_name);
 
     if (formData.thumbnails) {
@@ -223,15 +223,15 @@ console.log(data)
         />
         <TextField
           required
-          label="Price"
-          name="price"
+          label="quantity"
+          name="quantity"
           type="number"
           fullWidth
           inputProps={{ min: 1 }}
-          value={formData.price ?? ''}
+          value={formData.quantity ?? ''}
           onChange={handleChange}
-          error={Boolean(errors.price)}
-          helperText={errors.price}
+          error={Boolean(errors.quantity)}
+          helperText={errors.quantity}
         />
       </Box>
 

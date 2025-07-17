@@ -13,7 +13,7 @@ const MAX_IMAGE_SIZE_MB = 5;
 
 export interface IFormData {
   name: string;
-  price: number;
+  quantity: number;
   description: string;
   category_name: string;
   thumbnails?: File[];
@@ -21,7 +21,7 @@ export interface IFormData {
 
 interface IFormErrors {
   name?: string;
-  price?: string;
+  quantity?: string;
   category_name?: string;
   description?: string;
   thumbnails?: string;
@@ -44,7 +44,7 @@ const CATEGORIES = [
 const CreateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
-    price: 0,
+    quantity: 0,
     description: '',
     category_name: 'Choose',
     thumbnails: [],
@@ -58,7 +58,7 @@ const CreateProduct: React.FC = () => {
   const resetForm = useCallback(() => {
     setFormData({
       name: '',
-      price: 0,
+      quantity: 0,
       description: '',
       category_name: 'Choose',
       thumbnails: [],
@@ -72,7 +72,7 @@ const CreateProduct: React.FC = () => {
       const { name, value } = e.target;
       setFormData((prev) => ({
         ...prev,
-        [name]: name === 'price' ? Number(value) : value,
+        [name]: name === 'quantity' ? Number(value) : value,
       }));
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }, []);
@@ -144,10 +144,10 @@ const CreateProduct: React.FC = () => {
       formErrors.name = 'Only letters, numbers, and spaces are allowed.';
     }
 
-    if (!formData.price || isNaN(formData.price) || formData.price <= 0) {
-      formErrors.price = 'Enter a valid price > 0.';
-    } else if (!Number.isInteger(formData.price)) {
-      formErrors.price = 'Price must be a whole number.';
+    if (!formData.quantity || isNaN(formData.quantity) || formData.quantity <= 0) {
+      formErrors.quantity = 'Enter a valid quantity > 0.';
+    } else if (!Number.isInteger(formData.quantity)) {
+      formErrors.quantity = 'quantity must be a whole number.';
     }
 
     if (!formData.category_name || formData.category_name === 'Choose') {
@@ -175,7 +175,7 @@ const CreateProduct: React.FC = () => {
     try {
       const form = new FormData();
       form.append('product_name', formData.name.trim());
-      form.append('product_price', formData.price.toString());
+      form.append('product_quantity', formData.quantity.toString());
       form.append('product_description', formData.description.trim());
       form.append('category_name', formData.category_name);
 
@@ -222,9 +222,9 @@ const CreateProduct: React.FC = () => {
 
           <Grid item xs={12} md={6}>
             <TextField
-              required fullWidth name="price" type="number" label="Price"
-              value={formData.price || ''} onChange={handleInputChange}
-              error={!!errors.price} helperText={errors.price}
+              required fullWidth name="quantity" type="number" label="quantity"
+              value={formData.quantity || ''} onChange={handleInputChange}
+              error={!!errors.quantity} helperText={errors.quantity}
               inputProps={{ min: 1, step: 1 }}
             />
           </Grid>

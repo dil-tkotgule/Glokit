@@ -10,7 +10,7 @@ export class ProductRepository {
                 p."id" as "productId",
                 p."name",
                 p."description",
-                p."price",
+                p."quantity",
                 p."categoryId",
                 p."createdAt",
                 p."updatedAt",
@@ -51,7 +51,7 @@ export class ProductRepository {
                 p."id" AS "productId",
                 p."name",
                 p."description",
-                p."price",
+                p."quantity",
                 p."categoryId",
                 p."createdAt",
                 p."updatedAt",
@@ -73,10 +73,10 @@ export class ProductRepository {
         try {
             let productID: number;
             const result = await pool.query(
-                `INSERT INTO products ("name", "description", "price", "categoryId") 
+                `INSERT INTO products ("name", "description", "quantity", "categoryId") 
                 VALUES ($1, $2, $3, $4) 
                 RETURNING *`,
-                [product.name, product.description, product.price, product.categoryId]
+                [product.name, product.description, product.quantity, product.categoryId]
             );
             await pool.query("COMMIT");
             productID = result?.rows[0].id || 0;
@@ -87,13 +87,13 @@ export class ProductRepository {
         }
     }
 
-    public async updateProduct(id: string, name: string, description: string, price: number, categoryId: number): Promise<IProductDB> {
+    public async updateProduct(id: string, name: string, description: string, quantity: number, categoryId: number): Promise<IProductDB> {
         const result = await pool.query(
             `UPDATE products 
-            SET "name" = $1, "description" = $2, "price" = $3, "categoryId" = $4 
+            SET "name" = $1, "description" = $2, "quantity" = $3, "categoryId" = $4 
             WHERE "id" = $5 
             RETURNING *`,
-            [name, description, price, categoryId, id]
+            [name, description, quantity, categoryId, id]
         );
         return result.rows[0];
     }

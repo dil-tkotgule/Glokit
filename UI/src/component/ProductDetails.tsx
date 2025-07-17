@@ -9,7 +9,7 @@ interface IProductUIThumbnail {
   product_id: number;
   product_name: string;
   product_description: string;
-  product_price: number;
+  product_quantity: number;
   product_category_id: number;
   category_name: string;
   image_url: string;
@@ -166,7 +166,7 @@ const ProductDetails = () => {
             Category: <b>{product.category_name}</b>
           </Typography>
           <Typography variant="h6" color="primary" gutterBottom>
-            Quantity: {product.product_price}
+            Quantity: {product.product_quantity}
           </Typography>
           <Typography variant="body1" sx={{ mb: 2 }}>
             {product.product_description}

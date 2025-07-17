@@ -26,7 +26,7 @@ const BACKEND_URL = 'http://localhost:3000';
 interface IFormData {
   name: string;
   description: string;
-  price: number;
+  quantity: number;
   category_name: string;
   thumbnails: File[];  // all images as files
 }
@@ -34,7 +34,7 @@ interface IFormData {
 interface IFormErrors {
   name?: string;
   description?: string;
-  price?: string;
+  quantity?: string;
   category_name?: string;
   thumbnails?: string;
 }
@@ -76,7 +76,7 @@ const UpdateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
     description: '',
-    price: 0,
+    quantity: 0,
     category_name: '',
     thumbnails: [],
   });
@@ -90,7 +90,9 @@ const UpdateProduct: React.FC = () => {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`);
+const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`, {
+  withCredentials: true,
+});
         const items = Array.isArray(res.data.data) ? res.data.data : [res.data.data];
         if (!items.length) return;
 
@@ -102,7 +104,7 @@ const UpdateProduct: React.FC = () => {
         setFormData({
           name: main.product_name || '',
           description: main.product_description || '',
-          price: Number(main.product_price) || 0,
+          quantity: Number(main.product_quantity) || 0,
           category_name: main.category_name || '',
           thumbnails: [], // will fill below
         });
@@ -142,7 +144,7 @@ const UpdateProduct: React.FC = () => {
     setFormData({
       name: '',
       description: '',
-      price: 0,
+      quantity: 0,
       category_name: '',
       thumbnails: [],
     });
@@ -155,7 +157,7 @@ const UpdateProduct: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' ? Number(value) : value,
+      [name]: name === 'quantity' ? Number(value) : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
   }, []);
@@ -238,10 +240,10 @@ const UpdateProduct: React.FC = () => {
       formErrors.name = 'Only letters, numbers, and spaces are allowed.';
     }
 
-    if (!formData.price || isNaN(formData.price) || formData.price <= 0) {
-      formErrors.price = 'Enter a valid price > 0.';
-    } else if (!Number.isInteger(formData.price)) {
-      formErrors.price = 'Price must be a whole number.';
+    if (!formData.quantity || isNaN(formData.quantity) || formData.quantity <= 0) {
+      formErrors.quantity = 'Enter a valid quantity > 0.';
+    } else if (!Number.isInteger(formData.quantity)) {
+      formErrors.quantity = 'quantity must be a whole number.';
     }
 
     if (!formData.category_name) {
@@ -272,7 +274,7 @@ const UpdateProduct: React.FC = () => {
       const form = new FormData();
       form.append('product_name', formData.name.trim());
       form.append('product_description', formData.description.trim());
-      form.append('product_price', formData.price.toString());
+      form.append('product_quantity', formData.quantity.toString());
       form.append('category_name', formData.category_name);
 
       formData.thumbnails.forEach((file) => {
@@ -285,7 +287,7 @@ const UpdateProduct: React.FC = () => {
       });
       alert('Product updated successfully!');
       resetForm();
-      navigate(`/product/${id}`);
+      navigate(`/`);
     } catch (err) {
       console.error(err);
       alert('Failed to update product.');
@@ -326,15 +328,15 @@ const UpdateProduct: React.FC = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Price"
-                  name="price"
+                  label="quantity"
+                  name="quantity"
                   type="number"
-                  value={formData.price}
+                  value={formData.quantity}
                   onChange={handleInputChange}
                   fullWidth
                   required
-                  error={!!errors.price}
-                  helperText={errors.price}
+                  error={!!errors.quantity}
+                  helperText={errors.quantity}
                 />
               </Grid>
             </Grid>

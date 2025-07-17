@@ -16,10 +16,10 @@ class ProductValidation {
                 'string.max': 'Description should not exceed 1000 characters',
                 'any.required': 'Description is required',
             }),
-            product_price: Joi.number().positive().required().messages({
-                'number.base': 'Price should be a type of number',
-                'number.positive': 'Price should be a positive number',
-                'any.required': 'Price is required',
+            product_quantity: Joi.number().positive().required().messages({
+                'number.base': 'quantity should be a type of number',
+                'number.positive': 'quantity should be a positive number',
+                'any.required': 'quantity is required',
             }),
             category_name: Joi.string().max(255).required().messages({
                 'string.base': 'Category name should be a type of string',
@@ -34,7 +34,7 @@ class ProductValidation {
             product_id: Joi.number().optional(), // Allow product_id for update/put
             product_name: Joi.string().min(2).max(100).optional(),
             product_description: Joi.string().max(1000).optional(),
-            product_price: Joi.number().positive().optional(),
+            product_quantity: Joi.number().positive().optional(),
             category_name: Joi.string().max(100).optional(),
         });
     }

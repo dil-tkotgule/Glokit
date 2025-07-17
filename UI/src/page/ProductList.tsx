@@ -42,9 +42,17 @@ const ProductList: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-const response = await axios.get("http://localhost:3000/app/product/list", {
-  withCredentials: true,
-});        const data = response.data.data;
+        const response = await axios.get("http://localhost:3000/app/product/list", {
+          withCredentials: true,
+        });
+        const rawData = response.data.data;
+
+        // Ensure numeric fields are numbers
+        const data: IProductUI[] = rawData.map((item: any) => ({
+          ...item,
+          product_quantity: Number(item.product_quantity), // <-- fix here
+          product_price: Number(item.product_price),
+        }));
 
         const uniqueProducts = data.filter(
           (item: IProductUI, index: number, self: IProductUI[]) =>
@@ -71,7 +79,9 @@ const response = await axios.get("http://localhost:3000/app/product/list", {
   const handleDelete = async (id: string) => {
     try {
       setDeleteLoading(id);
-      await axios.delete(`http://localhost:3000/app/product/soft-delete/${id}`);
+      await axios.delete(`http://localhost:3000/app/product/soft-delete/${id}`, {
+        withCredentials: true,
+      });
       setProducts((prev) => prev.filter((p) => p.product_id !== id));
     } catch (err: any) {
       setError(err.message || "Delete failed");
@@ -92,6 +102,13 @@ const response = await axios.get("http://localhost:3000/app/product/list", {
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (!sortField) return 0;
+
+    // Ensure sorting by product_quantity uses numbers
+    if (sortField === "product_quantity") {
+      return sortOrder === "asc"
+        ? a.product_quantity - b.product_quantity
+        : b.product_quantity - a.product_quantity;
+    }
 
     const aVal = a[sortField];
     const bVal = b[sortField];
@@ -180,28 +197,24 @@ const response = await axios.get("http://localhost:3000/app/product/list", {
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-           <FormControl
-  size="small"
-  sx={{ minWidth: 240, width: "100%" }} // Wider minimum width
->
-  <InputLabel>Category Filter</InputLabel>
-  <Select
-    value={categoryFilter}
-    label="Category Filter"
-    onChange={(e) => {
-      setCategoryFilter(e.target.value as string);
-      setPage(0);
-    }}
-  >
-    <MenuItem value="">All Categories</MenuItem>
-    {categories.map((category) => (
-      <MenuItem key={category} value={category}>
-        {category}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-
+            <FormControl size="small" sx={{ minWidth: 240, width: "100%" }}>
+              <InputLabel>Category Filter</InputLabel>
+              <Select
+                value={categoryFilter}
+                label="Category Filter"
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value as string);
+                  setPage(0);
+                }}
+              >
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12} md={4} display="flex" alignItems="center">
@@ -229,9 +242,7 @@ const response = await axios.get("http://localhost:3000/app/product/list", {
                 />
               )}
               <Chip
-                label={`${sortedProducts.length} Product${
-                  sortedProducts.length !== 1 ? "s" : ""
-                }`}
+                label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? "s" : ""}`}
                 color="primary"
                 size="small"
                 variant="outlined"

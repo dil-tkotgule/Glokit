@@ -34,7 +34,7 @@ export interface IProductUI {
   product_id: string;
   product_name: string;
   product_description: string;
-  product_price: number;
+  product_quantity: number;
   category_name: string;
   image_url: string;
 }
@@ -95,11 +95,11 @@ const ProductTable: React.FC<ProductTableProps> = ({
     </Button>
   );
 
-  const formatPrice = (price: number) => {
+  const formatquantity = (quantity: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(price);
+    }).format(quantity);
   };
 
   const truncateText = (text: string, maxLength: number = 60) => {
@@ -207,7 +207,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                   width: "12%",
                 }}
               >
-                {renderSortButton("product_price", "Quantity")}
+                {renderSortButton("product_quantity", "Quantity")}
               </TableCell>
               <TableCell
                 sx={{
@@ -286,7 +286,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         fontSize: "1rem",
                       }}
                     >
-                      {formatPrice(product.product_price).substring(1,formatPrice(product.product_price).indexOf('.'))}
+                      {formatquantity(product.product_quantity).substring(1,formatquantity(product.product_quantity).indexOf('.'))}
                     </Typography>
                   </TableCell>
                   <TableCell>
