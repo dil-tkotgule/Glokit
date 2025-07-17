@@ -1,39 +1,47 @@
-import React from "react";
+// Navbar.tsx
+import React from 'react';
 import {
   AppBar,
   Toolbar,
   Typography,
   Button,
   Box,
-} from "@mui/material";
-import { useSelector, useDispatch } from "react-redux";
-import { type RootState } from "../redux/store";
-import { setUser } from "../redux/slice"; // for logging out
+  IconButton,
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useSelector, useDispatch } from 'react-redux';
+import { type RootState } from '../redux/store';
+import { setUser } from '../redux/slice';
 
 interface NavbarProps {
   probe?: string;
   onLoginClick?: () => void;
+  onMenuClick?: () => void;
+  isSmallScreen?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => {
-  const user = useSelector((state: RootState) => state); // whole user slice
+const Navbar: React.FC<NavbarProps> = ({
+  probe,
+  onLoginClick,
+  onMenuClick,
+  isSmallScreen,
+}) => {
+  const user = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
 
   const handleLogout = () => {
     dispatch(
       setUser({
-        name: "",
-        email: "",
-        role: "",
+        name: '',
+        email: '',
+        role: '',
         is_verified: false,
       })
     );
   };
 
   const isLoggedIn = !!user.email;
-
-  // Show "Admin" if role is admin, else show user's name
-  const displayName = user.role === "admin" ? "Admin" : user.name || "User";
+  const displayName = user.role === 'admin' ? 'Admin' : user.name || 'User';
 
   return (
     <AppBar
@@ -41,42 +49,45 @@ const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => {
       elevation={1}
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: "#1a1a1a",
-        color: "#fff",
+        backgroundColor: '#1a1a1a',
+        color: '#fff',
       }}
     >
-      <Toolbar
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* Left: Name or Admin */}
-        <Typography variant="h6" noWrap fontWeight="bold">
-          {displayName}
-        </Typography>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        {/* Left Section */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {isSmallScreen && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={onMenuClick}
+              sx={{ mr: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" fontWeight="bold" noWrap>
+            {displayName}
+          </Typography>
+        </Box>
 
-        {/* Right: Probe info and Auth Button */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Right Section */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {probe && (
-            <Typography variant="subtitle1" sx={{ color: "#fff" }}>
+            <Typography variant="subtitle1" sx={{ color: '#fff' }}>
               {probe}
             </Typography>
           )}
-
           {isLoggedIn ? (
             <Button
               variant="outlined"
               color="inherit"
               onClick={handleLogout}
               sx={{
-                borderColor: "#fff",
-                color: "#fff",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "#ccc",
-                },
+                borderColor: '#fff',
+                color: '#fff',
+                textTransform: 'none',
+                '&:hover': { borderColor: '#ccc' },
               }}
             >
               Logout
@@ -87,12 +98,10 @@ const Navbar: React.FC<NavbarProps> = ({ probe, onLoginClick }) => {
               color="inherit"
               onClick={onLoginClick}
               sx={{
-                borderColor: "#fff",
-                color: "#fff",
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "#ccc",
-                },
+                borderColor: '#fff',
+                color: '#fff',
+                textTransform: 'none',
+                '&:hover': { borderColor: '#ccc' },
               }}
             >
               Login

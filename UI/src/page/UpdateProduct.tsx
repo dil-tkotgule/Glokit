@@ -279,10 +279,10 @@ const UpdateProduct: React.FC = () => {
         form.append('thumbnails', file);
       });
 
-      await axios.put(`${BACKEND_URL}/app/product/update/${id}`, form, {
+      await axios.put(`${BACKEND_URL}/app/product/update/${id}`, form,{
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true, 
       });
-
       alert('Product updated successfully!');
       resetForm();
       navigate(`/product/${id}`);

@@ -71,6 +71,7 @@ export const cookieMiddleware = cookieParser();
 // 🔐 Authentication middleware
 export function authenticate(req: Request, res: Response, next: NextFunction):void {
   // Check session first
+  console.log(req.session)
   if (req.session?.user) {
     req.user = req.session.user;
      next();

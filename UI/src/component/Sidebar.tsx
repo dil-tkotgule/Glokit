@@ -1,3 +1,4 @@
+// Sidebar.tsx
 import React from 'react';
 import {
   Box,
@@ -12,25 +13,36 @@ import {
   useTheme,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { Link } from 'react-router-dom';
 
 const drawerWidth = 240;
+
+interface SidebarProps {
+  variant: 'permanent' | 'temporary';
+  open: boolean;
+  onClose?: () => void;
+}
 
 const menuItems = [
   { text: 'Home', icon: <DashboardIcon />, path: '/' },
 ];
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<SidebarProps> = ({ variant, open, onClose }) => {
   const theme = useTheme();
 
   return (
     <Drawer
-      variant="permanent"
+      variant={variant}
+      open={variant === 'temporary' ? open : true}
+      onClose={onClose}
+      ModalProps={{
+        keepMounted: true,
+      }}
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
+        display: { xs: 'block', md: 'block' },
+        '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
           backgroundColor: '#f9f9f9',
@@ -48,15 +60,7 @@ const Sidebar: React.FC = () => {
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              component={Link}
-              to={item.path}
-              sx={{
-                '&:hover': {
-                  backgroundColor: theme.palette.grey[200],
-                },
-              }}
-            >
+            <ListItemButton component={Link} to={item.path}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -68,7 +72,3 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
-
-
-
-

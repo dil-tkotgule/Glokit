@@ -58,6 +58,8 @@ class UserController {
           email: user.email,
           role: user.role,
         };
+        console.log("user session ")
+        console.log(req.session.user)
 
         // Generate JWT
         const token = jwt.sign(

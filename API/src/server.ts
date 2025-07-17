@@ -14,13 +14,13 @@ const app = express();
 app.use(cors({
   origin: 'http://localhost:5173',  // <-- your frontend origin here
   credentials: true,                // <-- allow cookies to be sent
-}));
+}));app.use(cookieParser());
 
 app.use(sessionMiddleware);  // use session AFTER cors
 
 app.use(urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cookieParser());
+
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/app/product', router);

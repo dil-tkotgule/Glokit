@@ -42,8 +42,9 @@ const ProductList: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3000/app/product/list");
-        const data = response.data.data;
+const response = await axios.get("http://localhost:3000/app/product/list", {
+  withCredentials: true,
+});        const data = response.data.data;
 
         const uniqueProducts = data.filter(
           (item: IProductUI, index: number, self: IProductUI[]) =>

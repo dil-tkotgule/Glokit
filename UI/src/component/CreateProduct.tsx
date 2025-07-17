@@ -1,24 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
 import {
-  Box,
-  Button,
-  TextField,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  Select,
-  Typography,
-  FormHelperText,
-  IconButton,
-  Paper,
-  Grid,
-  Divider,
+  Box, Button, TextField, MenuItem, InputLabel, FormControl,
+  Select, Typography, FormHelperText, IconButton, Paper, Grid, Divider
 } from '@mui/material';
 import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
-
 import type { SelectChangeEvent } from '@mui/material';
 
 const MAX_IMAGES = 2;
@@ -73,21 +60,22 @@ const CreateProduct: React.FC = () => {
       name: '',
       price: 0,
       description: '',
-      category_name: '',
+      category_name: 'Choose',
       thumbnails: [],
     });
     setPreviews([]);
     setErrors({});
   }, []);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'price' ? Number(value) : value,
-    }));
-    setErrors((prev) => ({ ...prev, [name]: '' }));
-  }, []);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === 'price' ? Number(value) : value,
+      }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }, []);
 
   const validateImageFile = (file: File): string | null => {
     if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
@@ -162,7 +150,7 @@ const CreateProduct: React.FC = () => {
       formErrors.price = 'Price must be a whole number.';
     }
 
-    if (!formData.category_name) {
+    if (!formData.category_name || formData.category_name === 'Choose') {
       formErrors.category_name = 'Select a category.';
     }
 
@@ -195,6 +183,7 @@ const CreateProduct: React.FC = () => {
 
       await axios.post('http://localhost:3000/app/product/create', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true, // ✅ Send JWT/session cookie
       });
 
       alert('Product created successfully!');
@@ -222,159 +211,129 @@ const CreateProduct: React.FC = () => {
       <Divider sx={{ mb: 3 }} />
 
       <Box component="form" noValidate onSubmit={handleSubmit}>
-
-
         <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              required fullWidth name="name" label="Product Name"
+              value={formData.name} onChange={handleInputChange}
+              error={!!errors.name} helperText={errors.name}
+            />
+          </Grid>
 
-          <Box display={'flex'} flexDirection={'column'} gap={2} >
-            {/* Name */}
-            <Box display={'flex'} gap={2}>
-              <Grid item xs={12} md={12} >
-                <TextField
-                  required fullWidth name="name" label="Product Name"
-                  value={formData.name} onChange={handleInputChange}
-                  error={!!errors.name} helperText={errors.name}
-                />
-              </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              required fullWidth name="price" type="number" label="Price"
+              value={formData.price || ''} onChange={handleInputChange}
+              error={!!errors.price} helperText={errors.price}
+              inputProps={{ min: 1, step: 1 }}
+            />
+          </Grid>
 
-              {/* Price */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  required fullWidth name="price" type="number" label="Price"
-                  value={formData.price || ''} onChange={handleInputChange}
-                  error={!!errors.price} helperText={errors.price}
-                  inputProps={{ min: 1, step: 1 }}
-                />
-              </Grid>
-            </Box>
-            {/* Description */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth multiline rows={4}
-                name="description" label="Description"
-                value={formData.description}
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.category_name} required>
+              <InputLabel>Category</InputLabel>
+              <Select
+                name="category_name"
+                value={formData.category_name}
                 onChange={handleInputChange}
-                error={!!errors.description}
-                helperText={errors.description || `${formData.description.length}/1000`}
-              />
-            </Grid>
-            {/* Buttons */}
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-start" gap={2}>
-                <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-                <Button variant="contained" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Creating...' : 'Create Product'}
-                </Button>
-              </Box>
-            </Grid>
-          </Box>
-
-
-          <Box display={'flex'} flexDirection={'column'}>
-
-            <Box display={'flex'} gap={2} flexDirection={'column'} md={12}>
-  {/* Category */}
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth error={!!errors.category_name} required>
-                  <InputLabel>Category</InputLabel>
-                  <Select
-                    name="category_name"
-                    value={formData.category_name}
-                    onChange={handleInputChange}
-                    fullWidth
-                    label="Category"
-                  >
-                    {CATEGORIES.map(opt => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{errors.category_name}</FormHelperText>
-                </FormControl>
-              </Grid>
-
-              {/* Upload Images */}
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth error={!!errors.thumbnails}>
-               <Button
-  component="label"
-  variant="outlined"
-  startIcon={<CloudUploadIcon />}
-  sx={{ height: 56, pl: 4, pr: 4, minWidth: 400 }} // enough to fit 'Max images uploaded'
-  disabled={previews.length >= MAX_IMAGES}
->
-  {previews.length >= MAX_IMAGES ? 'Max images uploaded' : 'Upload Images'}
-  <input
-    type="file"
-    accept="image/*"
-    multiple
-    hidden
-    onChange={handleFileChange}
-    disabled={previews.length >= MAX_IMAGES}
-  />
-</Button>
-
-                  <FormHelperText>
-                    {errors.thumbnails || `Max ${MAX_IMAGES} images, ${MAX_IMAGE_SIZE_MB}MB each`}
-                  </FormHelperText>
-                </FormControl>
-              </Grid>
-            
-            </Box>
-
-
-            {/* Image Preview */}
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  minHeight: 160,
-                  border: '1px dashed #ccc',
-                  borderRadius: 2,
-                  p: 2,
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  mt: 2,
-                  gap: 2,
-                  justifyContent: 'space-around'
-                }}
+                fullWidth
+                label="Category"
               >
-                {previews.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    No images selected
-                  </Typography>
-                ) : (
-                  previews.map((p, i) => (
-                    <Paper key={i} sx={{ width: 140, height: 140, position: 'relative', p: 1, overflow: 'hidden' }}>
-                      <IconButton
-                        onClick={() => handleImageDelete(i)}
-                        sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'white' }}
-                        size="small"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                      <img
-                        src={p.src}
-                        alt={`preview-${i}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }}
-                      />
-                      {/* <Typography variant="caption" noWrap>{p.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">{p.size}</Typography> */}
-                    </Paper>
-                  ))
-                )}
-              </Box>
-            </Grid>
+                {CATEGORIES.map(opt => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{errors.category_name}</FormHelperText>
+            </FormControl>
+          </Grid>
 
+          <Grid item xs={12}>
+            <TextField
+              fullWidth multiline rows={4}
+              name="description" label="Description"
+              value={formData.description}
+              onChange={handleInputChange}
+              error={!!errors.description}
+              helperText={errors.description || `${formData.description.length}/1000`}
+            />
+          </Grid>
 
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.thumbnails}>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                sx={{ height: 56 }}
+                disabled={previews.length >= MAX_IMAGES}
+              >
+                {previews.length >= MAX_IMAGES ? 'Max images uploaded' : 'Upload Images'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={handleFileChange}
+                  disabled={previews.length >= MAX_IMAGES}
+                />
+              </Button>
+              <FormHelperText>
+                {errors.thumbnails || `Max ${MAX_IMAGES} images, ${MAX_IMAGE_SIZE_MB}MB each`}
+              </FormHelperText>
+            </FormControl>
+          </Grid>
 
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                minHeight: 160,
+                border: '1px dashed #ccc',
+                borderRadius: 2,
+                p: 2,
+                display: 'flex',
+                flexWrap: 'wrap',
+                mt: 2,
+                gap: 2,
+                justifyContent: 'flex-start',
+              }}
+            >
+              {previews.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No images selected
+                </Typography>
+              ) : (
+                previews.map((p, i) => (
+                  <Paper key={i} sx={{ width: 140, height: 140, position: 'relative', p: 1 }}>
+                    <IconButton
+                      onClick={() => handleImageDelete(i)}
+                      sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'white' }}
+                      size="small"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                    <img
+                      src={p.src}
+                      alt={`preview-${i}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }}
+                    />
+                  </Paper>
+                ))
+              )}
+            </Box>
+          </Grid>
 
-
-          </Box>
-
-
+          <Grid item xs={12}>
+            <Box display="flex" justifyContent="flex-start" gap={2}>
+              <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button variant="contained" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Product'}
+              </Button>
+            </Box>
+          </Grid>
         </Grid>
       </Box>
     </Paper>
