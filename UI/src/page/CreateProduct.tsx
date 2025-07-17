@@ -21,7 +21,7 @@
 
 // export interface IFormData {
 //   name: string;
-//   quantity: number;
+//   price: number;
 //   description: string;
 //   category_name: string;
 //   thumbnails?: FileList | null;
@@ -29,7 +29,7 @@
 
 // interface IFormErrors {
 //   name?: string;
-//   quantity?: string;
+//   price?: string;
 //   category_name?: string;
 //   description?: string;
 //   thumbnails?: string;
@@ -38,7 +38,7 @@
 // const CreateProduct: React.FC = () => {
 //   const [formData, setFormData] = useState<IFormData>({
 //     name: '',
-//     quantity: 0,
+//     price: 0,
 //     description: '',
 //     category_name: '',
 //     thumbnails: null,
@@ -55,7 +55,7 @@
 //     const { name, value } = e.target;
 //     setFormData((prevData) => ({
 //       ...prevData,
-//       [name]: name === 'quantity' ? Number(value) : value,
+//       [name]: name === 'price' ? Number(value) : value,
 //     }));
 //     setErrors((prevData) => ({
 //       ...prevData, [name]: ''
@@ -113,8 +113,8 @@
 //       formErrors.name = 'Product name must be between 2 and 100 characters and alphanumeric';
 //     }
 
-//     if (!formData.quantity || isNaN(formData.quantity) || formData.quantity <= 0 || !Number.isInteger(formData.quantity)) {
-//       formErrors.quantity = 'Enter a valid integer quantity greater than 0';
+//     if (!formData.price || isNaN(formData.price) || formData.price <= 0 || !Number.isInteger(formData.price)) {
+//       formErrors.price = 'Enter a valid integer price greater than 0';
 //     }
 
 //     if (!formData.category_name) {
@@ -138,7 +138,7 @@
 
 //     const form = new FormData();
 //     form.append('product_name', formData.name);
-//     form.append('product_quantity', formData.quantity.toString());
+//     form.append('product_price', formData.price.toString());
 //     form.append('product_description', formData.description);
 //     form.append('category_name', formData.category_name);
 
@@ -152,7 +152,7 @@
 //     setFormData({
 //       name: '',
 //       description: '',
-//       quantity: 0,
+//       price: 0,
 //       category_name: '',
 //       thumbnails: null,
 //     });
@@ -166,7 +166,7 @@
 //       setFormData({
 //         name: '',
 //         description: '',
-//         quantity: 0,
+//         price: 0,
 //         category_name: '',
 //         thumbnails: null,
 //       });
@@ -216,15 +216,15 @@
 //         />
 //         <TextField
 //           required
-//           label="quantity"
-//           name="quantity"
+//           label="price"
+//           name="price"
 //           type="number"
 //           fullWidth
 //           inputProps={{ step: 1, min: 1 }}
-//           value={formData.quantity}
+//           value={formData.price}
 //           onChange={handleChange}
-//           error={Boolean(errors.quantity)}
-//           helperText={errors.quantity}
+//           error={Boolean(errors.price)}
+//           helperText={errors.price}
 //         />
 //       </Box>
 
@@ -380,7 +380,7 @@ const MAX_IMAGE_SIZE_MB = 5;
 
 export interface IFormData {
   name: string;
-  quantity: number;
+  price: number;
   description: string;
   category_name: string;
   thumbnails?: File[];
@@ -388,7 +388,7 @@ export interface IFormData {
 
 interface IFormErrors {
   name?: string;
-  quantity?: string;
+  price?: string;
   category_name?: string;
   description?: string;
   thumbnails?: string;
@@ -411,7 +411,7 @@ const CATEGORIES = [
 const CreateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
-    quantity: 0,
+    price: 0,
     description: '',
     category_name: 'Choose',
     thumbnails: [],
@@ -425,7 +425,7 @@ const CreateProduct: React.FC = () => {
   const resetForm = useCallback(() => {
     setFormData({
       name: '',
-      quantity: 0,
+      price: 0,
       description: '',
       category_name: 'Choose',
       thumbnails: [],
@@ -439,7 +439,7 @@ const CreateProduct: React.FC = () => {
       const { name, value } = e.target;
       setFormData((prev) => ({
         ...prev,
-        [name]: name === 'quantity' ? Number(value) : value,
+        [name]: name === 'price' ? Number(value) : value,
       }));
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }, []);
@@ -511,10 +511,10 @@ const CreateProduct: React.FC = () => {
       formErrors.name = 'Only letters, numbers, and spaces are allowed.';
     }
 
-    if (!formData.quantity || isNaN(formData.quantity) || formData.quantity <= 0) {
-      formErrors.quantity = 'Enter a valid quantity > 0.';
-    } else if (!Number.isInteger(formData.quantity)) {
-      formErrors.quantity = 'quantity must be a whole number.';
+    if (!formData.price || isNaN(formData.price) || formData.price <= 0) {
+      formErrors.price = 'Enter a valid price > 0.';
+    } else if (!Number.isInteger(formData.price)) {
+      formErrors.price = 'Price must be a whole number.';
     }
 
     if (!formData.category_name || formData.category_name === 'Choose') {
@@ -542,7 +542,7 @@ const CreateProduct: React.FC = () => {
     try {
       const form = new FormData();
       form.append('product_name', formData.name.trim());
-      form.append('product_quantity', formData.quantity.toString());
+      form.append('product_price', Number(formData.price));
       form.append('product_description', formData.description.trim());
       form.append('category_name', formData.category_name);
 
@@ -570,140 +570,143 @@ const CreateProduct: React.FC = () => {
   };
 
   return (
-    <Paper elevation={3} sx={{ maxWidth: 1000, mx: 'auto', mt: 4, p: 4, borderRadius: 2 }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 500 }}>
-        Create New Product
-      </Typography>
+   <Paper sx={{ p: 4, mt: 4, borderRadius: 2, maxWidth: 1000, mx: 'auto' }}>
+  <Typography variant="h4" gutterBottom>
+    Create New Product
+  </Typography>
+  <Divider sx={{ mb: 3 }} />
 
-      <Divider sx={{ mb: 3 }} />
-
-      <Box component="form" noValidate onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+  <Box component="form" noValidate onSubmit={handleSubmit}>
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={8}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
             <TextField
-              required fullWidth name="name" label="Product Name"
-              value={formData.name} onChange={handleInputChange}
-              error={!!errors.name} helperText={errors.name}
+              required
+              label="Product Name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              fullWidth
+              error={!!errors.name}
+              helperText={errors.name}
             />
           </Grid>
-
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
-              required fullWidth name="quantity" type="number" label="quantity"
-              value={formData.quantity || ''} onChange={handleInputChange}
-              error={!!errors.quantity} helperText={errors.quantity}
+              required
+              label="Price"
+              name="price"
+              type="number"
+              value={formData.price || ''}
+              onChange={handleInputChange}
+              fullWidth
+              error={!!errors.price}
+              helperText={errors.price}
               inputProps={{ min: 1, step: 1 }}
             />
           </Grid>
-
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth error={!!errors.category_name} required>
-              <InputLabel>Category</InputLabel>
-              <Select
-                name="category_name"
-                value={formData.category_name}
-                onChange={handleInputChange}
-                fullWidth
-                label="Category"
-              >
-                {CATEGORIES.map(opt => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>{errors.category_name}</FormHelperText>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth multiline rows={4}
-              name="description" label="Description"
-              value={formData.description}
-              onChange={handleInputChange}
-              error={!!errors.description}
-              helperText={errors.description || `${formData.description.length}/1000`}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth error={!!errors.thumbnails}>
-              <Button
-                component="label"
-                variant="outlined"
-                startIcon={<CloudUploadIcon />}
-                sx={{ height: 56 }}
-                disabled={previews.length >= MAX_IMAGES}
-              >
-                {previews.length >= MAX_IMAGES ? 'Max images uploaded' : 'Upload Images'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  hidden
-                  onChange={handleFileChange}
-                  disabled={previews.length >= MAX_IMAGES}
-                />
-              </Button>
-              <FormHelperText>
-                {errors.thumbnails || `Max ${MAX_IMAGES} images, ${MAX_IMAGE_SIZE_MB}MB each`}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                minHeight: 160,
-                border: '1px dashed #ccc',
-                borderRadius: 2,
-                p: 2,
-                display: 'flex',
-                flexWrap: 'wrap',
-                mt: 2,
-                gap: 2,
-                justifyContent: 'flex-start',
-              }}
-            >
-              {previews.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No images selected
-                </Typography>
-              ) : (
-                previews.map((p, i) => (
-                  <Paper key={i} sx={{ width: 140, height: 140, position: 'relative', p: 1 }}>
-                    <IconButton
-                      onClick={() => handleImageDelete(i)}
-                      sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'white' }}
-                      size="small"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                    <img
-                      src={p.src}
-                      alt={`preview-${i}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }}
-                    />
-                  </Paper>
-                ))
-              )}
-            </Box>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="flex-start" gap={2}>
-              <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button variant="contained" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Product'}
-              </Button>
-            </Box>
-          </Grid>
         </Grid>
-      </Box>
-    </Paper>
+
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          name="description"
+          label="Description"
+          value={formData.description}
+          onChange={handleInputChange}
+          error={!!errors.description}
+          helperText={errors.description || `${formData.description.length}/1000`}
+          sx={{ mt: 2 }}
+        />
+
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
+          <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create Product'}
+          </Button>
+        </Box>
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <FormControl fullWidth required error={!!errors.category_name} sx={{ mb: 3 }}>
+          <InputLabel>Category</InputLabel>
+          <Select
+            name="category_name"
+            label="Category"
+            value={formData.category_name}
+            onChange={handleInputChange}
+          >
+            {CATEGORIES.map((cat) => (
+              <MenuItem key={cat.value} value={cat.value}>
+                {cat.label}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText>{errors.category_name}</FormHelperText>
+        </FormControl>
+
+        <Button
+          variant="contained"
+          component="label"
+          fullWidth
+          disabled={previews.length >= MAX_IMAGES}
+          startIcon={<CloudUploadIcon />}
+          sx={{ mb: 1 }}
+        >
+          Upload Images
+          <input type="file" hidden multiple accept="image/*" onChange={handleFileChange} />
+        </Button>
+
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Max {MAX_IMAGES} images, {MAX_IMAGE_SIZE_MB}MB each
+        </Typography>
+        <FormHelperText error>{errors.thumbnails}</FormHelperText>
+
+        <Box
+          display={'flex'}
+          justifyContent={'center'}
+          alignItems={'center'}
+          sx={{
+            border: '2px dashed #ccc',
+            borderRadius: 1,
+            p: 1,
+            minHeight: 150,
+            background: '#f9f9f9',
+          }}
+        >
+          <Grid container spacing={4} display={'flex'} justifyContent={'center'} alignItems={'center'}>
+            {previews.map((img, i) => (
+              <Grid
+                item
+                xs={12}
+                key={i}
+                sx={{ position: 'relative', backgroundColor: 'transparent' }}
+              >
+                <img
+                  src={img.src}
+                  alt={img.name}
+                  style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
+                />
+                <IconButton
+                  size="small"
+                  sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'white' }}
+                  onClick={() => handleImageDelete(i)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      </Grid>
+    </Grid>
+  </Box>
+</Paper>
+
   );
 };
 
