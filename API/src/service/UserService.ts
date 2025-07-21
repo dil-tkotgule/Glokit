@@ -100,6 +100,37 @@ class UserService {
         return mapUserDBToUI(createdUser);
     }
 
+    public async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<boolean> {
+        // --- Sanitization ---
+        currentPassword = validator.escape(validator.trim(currentPassword));
+        newPassword = validator.escape(validator.trim(newPassword));
+
+        // Validate inputs
+        if (!userId || !currentPassword || !newPassword) {
+            throw new ValidationError("User ID, current password, and new password are required");
+        }
+
+        // Get user by ID
+        const user: UserDB | null = await UserRepository.getUserById(parseInt(userId));
+        if (!user) {
+            throw new ValidationError("User not found");
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isCurrentPasswordValid) {
+            return false;
+        }
+
+        // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password in database
+        const result = await UserRepository.updatePassword(parseInt(userId), hashedNewPassword);
+        
+        return result;
+    }
+
 }
 
 export default new UserService();

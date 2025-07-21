@@ -15,13 +15,36 @@ export class ProductController {
 
   public async getAllProducts(req: Request, res: Response): Promise<void> {
     try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+
       const products = await this.productService.getAllProducts();
 
       if (!products || products.length === 0) {
         throw new NotFoundError("No products found");
       }
 
-      sendSuccess(res, products, "Products fetched successfully");
+      // Apply pagination manually if service doesn't support it yet
+      const startIndex = offset;
+      const endIndex = offset + limit;
+      const paginatedProducts = products.slice(startIndex, endIndex);
+      const total = products.length;
+
+      const paginationData = {
+        products: paginatedProducts,
+        count: paginatedProducts.length,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit,
+          hasNextPage: page < Math.ceil(total / limit),
+          hasPreviousPage: page > 1
+        }
+      };
+
+      sendSuccess(res, paginationData, "Products fetched successfully");
     } catch (err) {
       logger.error("Error fetching products", { error: err });
       sendError(res, err);

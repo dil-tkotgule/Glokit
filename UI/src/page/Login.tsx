@@ -9,10 +9,12 @@ import {
     IconButton,
     Avatar
 } from '@mui/material';
+
+
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import {type RootState, type  AppDispatch} from '../redux/store'
+// import {type RootState, type  AppDispatch} from '../redux/store'
 import { useDispatch } from 'react-redux';
 import { setUser } from '../redux/slice';
 import { useNavigate } from 'react-router-dom';
@@ -165,7 +167,9 @@ dispatch(setUser(userPayload));
                                 '& fieldset': { borderColor: '#ff9800' },
                                 '&:hover fieldset': { borderColor: '#000' },
                                 '&.Mui-focused fieldset': { borderColor: '#000' }
-                            }
+                            },
+                            // hide native browser reveal/clear icons
+                            '& input::-ms-reveal, & input::-ms-clear': { display: 'none' }
                         }}
                         InputLabelProps={{ style: { color: '#ff9800' } }}
                         InputProps={{
@@ -173,7 +177,8 @@ dispatch(setUser(userPayload));
                                 <InputAdornment position="end">
                                     <IconButton
                                         aria-label="toggle password visibility"
-                                        onClick={() => setShowPassword((show) => !show)}
+                                        onClick={() => setShowPassword(prev => !prev)}
+                                        onMouseDown={e => e.preventDefault()}
                                         edge="end"
                                         size="small"
                                         sx={{ color: '#ff9800' }}

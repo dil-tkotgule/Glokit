@@ -28,6 +28,7 @@ const ProductList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [totalItems, setTotalItems] = useState(0);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -43,28 +44,35 @@ const ProductList: React.FC = () => {
       try {
         setLoading(true);
         const response = await axios.get("http://localhost:3000/app/product/list", {
+          params: {
+            page: page + 1, // Backend expects 1-based pagination
+            limit: rowsPerPage,
+          },
           withCredentials: true,
         });
-        const rawData = response.data.data;
+        
+        const responseData = response.data.data;
+        const paginatedProducts = responseData.products || [];
+        const pagination = responseData.pagination || {};
 
         // Ensure numeric fields are numbers
-        const data: IProductUI[] = rawData.map((item: any) => ({
+        const data: IProductUI[] = paginatedProducts.map((item: any) => ({
           ...item,
-          product_quantity: Number(item.product_quantity), // <-- fix here
+          product_quantity: Number(item.product_quantity),
           product_price: Number(item.product_price),
         }));
 
-        const uniqueProducts = data.filter(
-          (item: IProductUI, index: number, self: IProductUI[]) =>
-            index === self.findIndex((p) => p.product_id === item.product_id)
-        );
+        setProducts(data);
+        setTotalItems(pagination.totalItems || 0);
 
-        setProducts(uniqueProducts);
-
-        const uniqueCategories = Array.from(
-          new Set(uniqueProducts.map((p) => p.category_name).filter(Boolean))
-        );
-        setCategories(uniqueCategories);
+        // Get all categories for filter (you might want to create a separate endpoint for this)
+        if (page === 0) {
+          const uniqueCategories = Array.from(
+            new Set(data.map((p) => p.category_name).filter(Boolean))
+          );
+          setCategories(uniqueCategories);
+        }
+        
         setError(null);
       } catch (err: any) {
         setError(err.message || "Failed to load products");
@@ -74,7 +82,7 @@ const ProductList: React.FC = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [page, rowsPerPage]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -95,6 +103,7 @@ const ProductList: React.FC = () => {
     setSortField(field);
   };
 
+  // Remove client-side filtering and sorting since it's now handled by pagination
   const filteredProducts = products.filter((product) =>
     product.product_name.toLowerCase().includes(search.toLowerCase()) &&
     (categoryFilter ? product.category_name === categoryFilter : true)
@@ -103,7 +112,6 @@ const ProductList: React.FC = () => {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (!sortField) return 0;
 
-    // Ensure sorting by product_quantity uses numbers
     if (sortField === "product_quantity") {
       return sortOrder === "asc"
         ? a.product_quantity - b.product_quantity
@@ -126,10 +134,8 @@ const ProductList: React.FC = () => {
     return 0;
   });
 
-  const paginatedProducts = sortedProducts.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // Use filtered products directly since pagination is handled by API
+  const displayProducts = sortedProducts;
 
   const hasActiveFilters = search || categoryFilter;
 
@@ -255,8 +261,8 @@ const ProductList: React.FC = () => {
       {/* Product Table */}
       <Card sx={{ height: "100%", overflow: "hidden" }}>
         <ProductTable
-          products={paginatedProducts}
-          count={sortedProducts.length}
+          products={displayProducts}
+          count={totalItems}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={(_, newPage) => setPage(newPage)}
