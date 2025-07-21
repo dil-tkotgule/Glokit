@@ -55,8 +55,28 @@ class ProductValidation {
                 'array.min': 'At least one image is required.',
                 'array.max': 'Maximum two images allowed.',
                 'any.required': 'Images are required.',
-                'object.mimetype': 'Only image files are allowed.',
-                'object.size': 'File size must not exceed 5MB.',
+                'string.valid': 'Only image files are allowed.',
+                'number.max': 'File size must not exceed 5MB.',
+            });
+    }
+
+    static thumbnailSchemaOptional() {
+        return Joi.array()
+            .min(1)
+            .max(2)
+            .items(
+                Joi.object({
+                    originalname: Joi.string().required(),
+                    mimetype: Joi.string().valid('image/jpeg', 'image/png', 'image/jpg', 'image/gif').required(),
+                    size: Joi.number().max(5 * 1024 * 1024).required(), // 5MB
+                })
+            )
+            .optional()
+            .messages({
+                'array.min': 'At least one image is required.',
+                'array.max': 'Maximum two images allowed.',
+                'string.valid': 'Only image files are allowed.',
+                'number.max': 'File size must not exceed 5MB.',
             });
     }
 }

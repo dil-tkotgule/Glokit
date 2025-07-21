@@ -137,8 +137,8 @@ class UserController {
     try {
       const { currentPassword, newPassword, confirmPassword } = req.body;
       console.log('Change Password Request:', req.body);
-      console.log('User ID from params:', req.params);
-      const { userId } = req.params;
+      console.log('User email from params:', req.params);
+      const { email } = req.params;
 
       // Validate required fields
       if (!currentPassword || !newPassword || !confirmPassword) {
@@ -158,13 +158,13 @@ class UserController {
         return;
       }
 
-      if (!userId) {
-        sendError(res, new Error("User ID is required"));
+      if (!email) {
+        sendError(res, new Error("User email is required"));
         return;
       }
 
       // Call service to change password
-      const result = await UserService.changePassword(userId, currentPassword, newPassword);
+      const result = await UserService.changePassword(email, currentPassword, newPassword);
       
       if (!result) {
         sendError(res, new Error("Current password is incorrect"));

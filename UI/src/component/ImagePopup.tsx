@@ -30,6 +30,8 @@ interface IProductThumbnail {
   product_quantity: number;
   product_category_id: number;
   category_name: string;
+  image_urls: string; // Comma-separated string of image URLs
+  file_sizes: string; // Comma-separated string of file sizes
   image_url: string;
   file_size: number;
   created_at: Date;
@@ -51,6 +53,7 @@ const ImagePopup: React.FC<ImagePopupProps> = ({
   productName,
   initialImageUrl,
 }) => {
+  console.log(initialImageUrl)
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   
@@ -77,22 +80,23 @@ const ImagePopup: React.FC<ImagePopupProps> = ({
     try {
       setLoading(true);
       setError(null);
-      
       const response = await axios.get(
         `http://localhost:3000/app/product/get/${productId}`,
         { withCredentials: true }
       );
-      
       const data = response.data.data;
-      
+      console.log("Fetched product images:", data);
+
       if (Array.isArray(data) && data.length > 0) {
-        const imageUrls = data.map((item: IProductThumbnail) => {
-          const imageUrl = item.image_url;
-          return imageUrl.includes("uploads")
-            ? `http://localhost:3000/${imageUrl
-                .substring(imageUrl.indexOf("uploads"))
-                .replace(/\\/g, "/")}`
-            : imageUrl;
+        const imageUrls = data.flatMap((item: IProductThumbnail) => {
+          const urls = item.image_urls.split(",").map((url) =>
+            url.includes("uploads")
+              ? `http://localhost:3000/${url
+                  .substring(url.indexOf("uploads"))
+                  .replace(/\\/g, "/")}`
+              : url
+          );
+          return urls;
         });
         
         setImages(imageUrls);

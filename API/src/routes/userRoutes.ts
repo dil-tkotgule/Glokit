@@ -9,20 +9,17 @@ router.get('/logout', UserController.logout);
 
 router.post('/register', UserController.register);
 
-router.post('/change-password/:userId', UserController.changePassword);
+router.post('/change-password/:email', UserController.changePassword);
 
 
 // user change password route
 // endpoint to change user password
-// POST /app/user/change-password/1
+// POST /app/user/change-password/user@example.com
 // Content-Type: application/json
 
 // {
 //   "currentPassword": "myOldPassword",
 //   "newPassword": "myNewPassword123",
-//   "confirmPassword": "differentPassword"
-
-
-
+//   "confirmPassword": "myNewPassword123"
 // }
 export default router;

@@ -87,25 +87,24 @@ console.log(files)
         product.product_name = validator.escape(validator.trim(String(product.product_name)));
         product.product_description = validator.escape(validator.trim(String(product.product_description)));
         product.product_quantity = Number(product.product_quantity);
-        console.log(product.product_quantity)
+        
         // Joi validation for product fields
         const { error } = ProductValidation.updateProductSchema().validate(product);
         if (error) {
             throw new ValidationError(error.details[0].message);
         }
 
-        // Prepare files for Joi validation (if files exist)
-        if (!files || files.length === 0) {
-            throw new ValidationError("At least one image is required.");
-        }
-        const filesForValidation = files.map(file => ({
-            originalname: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size,
-        }));
-        const thumbValidation = ProductValidation.thumbnailSchema().validate(filesForValidation);
-        if (thumbValidation.error) {
-            throw new ValidationError(thumbValidation.error.details[0].message);
+        // Make file validation optional for updates
+        if (files && files.length > 0) {
+            const filesForValidation = files.map(file => ({
+                originalname: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size,
+            }));
+            const thumbValidation = ProductValidation.thumbnailSchema().validate(filesForValidation);
+            if (thumbValidation.error) {
+                throw new ValidationError(thumbValidation.error.details[0].message);
+            }
         }
 
         // Ensure category exists and get its ID
@@ -123,10 +122,15 @@ console.log(files)
                 dbProduct.quantity,
                 dbProduct.categoryId
             );
-            await this.productRepository.deleteProductThumbnails(id);
-            for (const file of files) {
-                await this.productRepository.addProductThumbnail(id, `uploads\\${file.filename}`, file.size);
+            
+            // Only update thumbnails if new files are provided
+            if (files && files.length > 0) {
+                await this.productRepository.deleteProductThumbnails(id);
+                for (const file of files) {
+                    await this.productRepository.addProductThumbnail(id, `uploads\\${file.filename}`, file.size);
+                }
             }
+            
             await pool.query("COMMIT");
             return mapProductDBToUI(updatedProduct);
         } catch (err) {
