@@ -43,6 +43,27 @@ class UserRepository {
 
         return rows[0];
     }
+
+    public async getUserById(userId: number): Promise<UserDB | null> {
+        const { rows } = await pool.query(
+            `SELECT * FROM users WHERE user_id = $1`,
+            [userId]
+        );
+        
+        if (rows.length === 0) {
+            return null;
+        }
+        return rows[0];
+    }
+
+    public async updatePassword(userId: number, hashedPassword: string): Promise<boolean> {
+        const { rowCount } = await pool.query(
+            `UPDATE users SET password_hash = $1 WHERE user_id = $2`,
+            [hashedPassword, userId]
+        );
+        
+        return rowCount! > 0;
+    }
 }
 
 export default new UserRepository();

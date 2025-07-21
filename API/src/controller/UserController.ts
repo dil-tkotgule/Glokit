@@ -132,6 +132,51 @@ class UserController {
       sendError(res, error);
     }
   }
+
+  public async changePassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+      console.log('Change Password Request:', req.body);
+      console.log('User ID from params:', req.params);
+      const { userId } = req.params;
+
+      // Validate required fields
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        sendError(res, new Error("Current password, new password, and confirm password are required"));
+        return;
+      }
+
+      // Validate new password confirmation
+      if (newPassword !== confirmPassword) {
+        sendError(res, new Error("New password and confirm password do not match"));
+        return;
+      }
+
+      // Validate password strength
+      if (newPassword.length < 6) {
+        sendError(res, new Error("New password must be at least 6 characters long"));
+        return;
+      }
+
+      if (!userId) {
+        sendError(res, new Error("User ID is required"));
+        return;
+      }
+
+      // Call service to change password
+      const result = await UserService.changePassword(userId, currentPassword, newPassword);
+      
+      if (!result) {
+        sendError(res, new Error("Current password is incorrect"));
+        return;
+      }
+
+      sendSuccess(res, null, "Password changed successfully");
+    } catch (error) {
+      logger.error('Error changing password', { error });
+      sendError(res, error);
+    }
+  }
 }
 
 export default new UserController();
