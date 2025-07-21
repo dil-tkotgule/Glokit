@@ -25,6 +25,7 @@
     "dompurify": "^3.2.6",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",

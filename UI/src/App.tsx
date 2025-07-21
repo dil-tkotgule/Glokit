@@ -38,9 +38,7 @@ function App() {
     <Route
   path="/"
   element={
-    <PrivateRoute>
       <RoleBasedRoute />
-    </PrivateRoute>
   }
 />
         {/* <Route

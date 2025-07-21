@@ -149,7 +149,7 @@ const ProductList: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, width: "100%" }}>
+    <Box sx={{ p: { xs: 1, md: 4 }, width: "100%" }}>
       {/* Header */}
       <Box
         display="flex"
@@ -164,6 +164,16 @@ const ProductList: React.FC = () => {
         </Typography>
         <Button
           variant="contained"
+          sx={{
+            backgroundColor: "#102E50",
+            textTransform: 'none',
+            fontStyle: 'normal',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            '&.MuiButton-root': {
+              textTransform: 'none'
+            }
+          }}
           startIcon={<Add />}
           onClick={() => navigate("/create")}
         >
@@ -217,8 +227,8 @@ const ProductList: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4} display="flex" alignItems="center">
-            <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Grid item xs={12} md={4} display="flex" alignItems="center" justifyContent="flex-end">
+            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
               {hasActiveFilters && (
                 <Chip
                   label="Clear Filters"
@@ -241,13 +251,18 @@ const ProductList: React.FC = () => {
                   }}
                 />
               )}
-              <Chip
-                label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? "s" : ""}`}
-                color="primary"
-                size="small"
-                variant="outlined"
-              />
             </Stack>
+          </Grid>
+          <Grid>
+            <Chip
+              label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? "s" : ""}`}
+              color="primary"
+              size="small"
+              variant="outlined"
+              sx={{
+                marginLeft: 'auto',
+              }}
+            />
           </Grid>
         </Grid>
       </Paper>
