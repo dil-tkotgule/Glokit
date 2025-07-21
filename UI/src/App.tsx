@@ -11,6 +11,7 @@ import PrivateRoute from './component/PrivateRoute';  // adjust path if needed
 import PublicRoute from './component/PublicRoute';    // add PublicRoute
 import HomePage from './component/User/HomePage';
 import RoleBasedRoute from './component/RoleBasedRoute';
+import ForgotPassword from './page/ForgotPassword'; 
 
 function App() {
   return (
@@ -83,7 +84,14 @@ function App() {
             </PrivateRoute>
           }
         />
-
+          <Route
+          path="/resetPassword"
+          element={
+            <PrivateRoute>
+              <ForgotPassword></ForgotPassword>
+            </PrivateRoute>
+          }
+        />
         <Route path='/home-page' element={<HomePage></HomePage>}></Route>
       </Routes>
     </BrowserRouter>
