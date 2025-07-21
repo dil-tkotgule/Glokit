@@ -9,6 +9,9 @@ export interface IProductUI {
     updated_by?: string | null;
     created_at?: Date | null;
     updated_at?: Date | null;
+    image_urls?: string; // Array of image URLs
+    file_sizes?: string; // Array of file sizes
+    
 }
 
 export interface IProductDB {
@@ -21,6 +24,8 @@ export interface IProductDB {
     updatedBy?: string | null;
     createdAt?: Date | null;
     updatedAt?: Date | null;
+    imageUrls?: string; // Array of image URLs
+    fileSizes?: string; // Array of file sizes
 
 }
 
@@ -35,6 +40,8 @@ export interface IProductUIThumbnail {
     file_size: number, // Optional, if needed
     created_at: Date,
     updated_at: Date, // Optional, if needed
+    image_urls?: string; // Comma-separated string of image URLs
+    file_sizes?: string; // Comma-separated string of file sizes
 }
 
 // Explicitly define the combined interface to resolve property conflicts
@@ -50,4 +57,6 @@ export interface IProductDBThumbnail {
     categoryName: string;
     imageUrl?: string; // Optional, if needed
     fileSize?: number;
+    imageUrls?: string; // Comma-separated string of image URLs
+    fileSizes?: string; // Comma-separated string of file sizes
 }

@@ -20,7 +20,6 @@ const validateThumbnails = (req: Request, res: Response, next: NextFunction) => 
             error: error.details[0].message,
         }); return;
     }
-    console.log("kotule")
     next();
 };
 export default validateThumbnails;

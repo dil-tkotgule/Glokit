@@ -100,18 +100,19 @@ class UserService {
         return mapUserDBToUI(createdUser);
     }
 
-    public async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<boolean> {
+    public async changePassword(email: string, currentPassword: string, newPassword: string): Promise<boolean> {
         // --- Sanitization ---
+        email = validator.escape(validator.trim(email));
         currentPassword = validator.escape(validator.trim(currentPassword));
         newPassword = validator.escape(validator.trim(newPassword));
 
         // Validate inputs
-        if (!userId || !currentPassword || !newPassword) {
-            throw new ValidationError("User ID, current password, and new password are required");
+        if (!email || !currentPassword || !newPassword) {
+            throw new ValidationError("User email, current password, and new password are required");
         }
 
-        // Get user by ID
-        const user: UserDB | null = await UserRepository.getUserById(parseInt(userId));
+        // Get user by email
+        const user: UserDB | null = await UserRepository.getUserByEmail(email);
         if (!user) {
             throw new ValidationError("User not found");
         }
@@ -125,8 +126,8 @@ class UserService {
         // Hash the new password
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update password in database
-        const result = await UserRepository.updatePassword(parseInt(userId), hashedNewPassword);
+        // Update password in database using user_id
+        const result = await UserRepository.updatePassword(user.user_id, hashedNewPassword);
         
         return result;
     }

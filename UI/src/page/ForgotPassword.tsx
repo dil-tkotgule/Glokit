@@ -7,9 +7,13 @@ import {
     Paper,
     Snackbar,
     Alert,
-    Avatar
+    Avatar,
+    InputAdornment,
+    IconButton
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { setUser } from '../redux/slice';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -26,6 +30,9 @@ const ForgotPassword: React.FC = () => {
     const [errors, setErrors] = useState<{ currentPassword?: string; newPassword?: string; confirmNewPassword?: string; general?: string }>({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const validate = () => {
         const newErrors: typeof errors = {};
@@ -45,14 +52,20 @@ const ForgotPassword: React.FC = () => {
         }
         setErrors({});
         try {
-            const response = await fetch('http://localhost:3000/app/user/resetPassword', {
+            // Get user data from localStorage or Redux store
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const userEmail = userData.email || user.email;
+            
+            const response = await fetch(`http://localhost:3000/app/user/change-password/${userEmail}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     currentPassword,
-                    newPassword
+                    newPassword,
+                    confirmPassword: confirmNewPassword
                 })
             });
 
@@ -74,6 +87,7 @@ const ForgotPassword: React.FC = () => {
             }, 2000);
 
         } catch (err: any) {
+            setErrors({ general: err.message || 'Failed to change password' });
         }
     };
 
@@ -127,7 +141,7 @@ const ForgotPassword: React.FC = () => {
                         variant="outlined"
                         fullWidth
                         margin="dense"
-                        type="password" // Always hide the current password
+                        type={showCurrentPassword ? 'text' : 'password'}
                         value={currentPassword}
                         onChange={e => setCurrentPassword(e.target.value)}
                         error={!!errors.currentPassword}
@@ -143,13 +157,29 @@ const ForgotPassword: React.FC = () => {
                             }
                         }}
                         InputLabelProps={{ style: { color: '#ff9800' } }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle current password visibility"
+                                        onClick={() => setShowCurrentPassword(prev => !prev)}
+                                        onMouseDown={e => e.preventDefault()}
+                                        edge="end"
+                                        size="small"
+                                        sx={{ color: '#ff9800' }}
+                                    >
+                                        {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                     <TextField
                         label="New Password"
                         variant="outlined"
                         fullWidth
                         margin="dense"
-                        type="password"
+                        type={showNewPassword ? 'text' : 'password'}
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
                         error={!!errors.newPassword}
@@ -166,13 +196,29 @@ const ForgotPassword: React.FC = () => {
                             }
                         }}
                         InputLabelProps={{ style: { color: '#ff9800' } }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle new password visibility"
+                                        onClick={() => setShowNewPassword(prev => !prev)}
+                                        onMouseDown={e => e.preventDefault()}
+                                        edge="end"
+                                        size="small"
+                                        sx={{ color: '#ff9800' }}
+                                    >
+                                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                     <TextField
                         label="Confirm New Password"
                         variant="outlined"
                         fullWidth
                         margin="dense"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmNewPassword}
                         onChange={e => setConfirmNewPassword(e.target.value)}
                         error={!!errors.confirmNewPassword}
@@ -189,6 +235,22 @@ const ForgotPassword: React.FC = () => {
                             }
                         }}
                         InputLabelProps={{ style: { color: '#ff9800' } }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle confirm password visibility"
+                                        onClick={() => setShowConfirmPassword(prev => !prev)}
+                                        onMouseDown={e => e.preventDefault()}
+                                        edge="end"
+                                        size="small"
+                                        sx={{ color: '#ff9800' }}
+                                    >
+                                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
                     />
                     {errors.general && (
                         <Typography color="error" variant="body2" sx={{ mt: 1 }}>

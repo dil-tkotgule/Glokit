@@ -89,52 +89,52 @@ const UpdateProduct: React.FC = () => {
   // Load product and convert existing images into File objects
   useEffect(() => {
     const fetchProductData = async () => {
-      try {
-const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`, {
-  withCredentials: true,
-});
-        const items = Array.isArray(res.data.data) ? res.data.data : [res.data.data];
-        if (!items.length) return;
+     try {
+  const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`, {
+    withCredentials: true,
+  });
+  const items = Array.isArray(res.data.data) ? res.data.data : [res.data.data];
+  if (!items.length) return;
 
-        const main = {
-          ...items[0],
-          images: items.map((item: any) => item.image_url),
-        };
+  const main = {
+    ...items[0],
+    images: items[0].image_urls ? items[0].image_urls.split(',') : [],
+  };
 
-        setFormData({
-          name: main.product_name || '',
-          description: main.product_description || '',
-          quantity: Number(main.product_quantity) || 0,
-          category_name: main.category_name || '',
-          thumbnails: [], // will fill below
-        });
+  console.log('Fetched product:', main);
+  setFormData({
+    name: main.product_name || '',
+    description: main.product_description || '',
+    quantity: Number(main.product_quantity) || 0,
+    category_name: main.category_name || '',
+    thumbnails: [], // will fill below
+  });
 
-        // Convert each image URL to File object
-        const files: File[] = await Promise.all(
-          main.images.map(async (imageUrl: string, idx: number) => {
-            const url = getImageUrl(imageUrl);
-            // Try to guess extension
-            const extension = url.split('.').pop()?.split(/\#|\?/)[0] || 'jpg';
-            const filename = `image_${idx + 1}.${extension}`;
-            return await urlToFile(url, filename);
-          })
-        );
+  // Convert each image URL to File object
+  const files: File[] = await Promise.all(
+    main.images.map(async (imageUrl: string, idx: number) => {
+      const url = getImageUrl(imageUrl.trim());
+      const extension = url.split('.').pop()?.split(/\#|\?/)[0] || 'jpg';
+      const filename = `image_${idx + 1}.${extension}`;
+      return await urlToFile(url, filename);
+    })
+  );
 
-        // Create previews for UI
-        const previews = files.map((file) => ({
-          src: URL.createObjectURL(file),
-          name: file.name,
-          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          file,
-        }));
+  // Create previews for UI
+  const previews = files.map((file) => ({
+    src: URL.createObjectURL(file),
+    name: file.name,
+    size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+    file,
+  }));
 
-        setFormData((prev) => ({ ...prev, thumbnails: files }));
-        setNewPreviews(previews);
-      } catch (error) {
-        console.error('Failed to load product data', error);
-      } finally {
-        setLoading(false);
-      }
+  setFormData((prev) => ({ ...prev, thumbnails: files }));
+  setNewPreviews(previews);
+} catch (error) {
+  console.error('Failed to load product data', error);
+} finally {
+  setLoading(false);
+}
     };
 
     fetchProductData();

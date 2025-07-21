@@ -27,9 +27,7 @@ const productService = new ProductService();
 const productController = new ProductController(productService);    
 
 router.post('/create',authenticate,requireAdmin ,upload.array('thumbnails', 2), productController.createProduct.bind(productController));
-// router.get('/list', authenticate,requireAdmin, productController.getAllProducts.bind(productController));
-
 router.get('/list', productController.getAllProducts.bind(productController));
-router.put('/update/:id', authenticate,requireAdmin, upload.array('thumbnails', 2), validateUpdateProduct, validateThumbnails, productController.updateProduct.bind(productController));
-router.get('/get/:id',authenticate, requireAdmin, productController.getProductById.bind(productController));
-router.delete('/soft-delete/:id',authenticate, requireAdmin, productController.softDeleteProduct.bind(productController));
+router.put('/update/:id', authenticate, requireAdmin, upload.array('thumbnails', 2), validateUpdateProduct, productController.updateProduct.bind(productController));
+router.get('/get/:id',authenticate, productController.getProductById.bind(productController));
+router.delete('/soft-delete/:id',authenticate,requireAdmin, productController.softDeleteProduct.bind(productController));

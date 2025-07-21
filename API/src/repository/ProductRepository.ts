@@ -7,20 +7,21 @@ export class ProductRepository {
     public async getAll(): Promise<IProductDBThumbnail[]> {
         const { rows } = await pool.query(
             `SELECT 
-                p."id" as "productId",
-                p."name",
-                p."description",
-                p."quantity",
-                p."categoryId",
-                p."createdAt",
-                p."updatedAt",
-                c."name" AS "categoryName",
-                t."imageUrl",
-                t."fileSize"
-            FROM products p
-            JOIN categories c ON p."categoryId" = c."id"
-            JOIN product_thumbnails t ON p."id" = t."productId"
-            WHERE p."isDeleted" = FALSE;`
+    p."id" as "productId",
+    p."name",
+    p."description",
+    p."quantity",
+    p."categoryId",
+    p."createdAt",
+    p."updatedAt",
+    c."name" AS "categoryName",
+    STRING_AGG(t."imageUrl", ',') AS "imageUrls",
+    STRING_AGG(t."fileSize"::TEXT, ',') AS "fileSizes"
+FROM products p
+JOIN categories c ON p."categoryId" = c."id"
+LEFT JOIN product_thumbnails t ON p."id" = t."productId"
+WHERE p."isDeleted" = FALSE
+GROUP BY p."id", c."name";`
         );
 
         console.log("Fetched products:", rows); // Debugging log
@@ -48,20 +49,23 @@ export class ProductRepository {
     public async getById(id: string): Promise<IProductDBThumbnail[] | null> {
         const { rows } = await pool.query(
             `SELECT 
-                p."id" AS "productId",
-                p."name",
-                p."description",
-                p."quantity",
-                p."categoryId",
-                p."createdAt",
-                p."updatedAt",
-                c."name" AS "categoryName",
-                t."imageUrl",
-                t."fileSize"
-            FROM products p
-            JOIN categories c ON p."categoryId" = c."id"
-            JOIN product_thumbnails t ON p."id" = t."productId"
-            WHERE p."id" = $1 and p."isDeleted" = FALSE`, [id]
+    p."id" as "productId",
+    p."name",
+    p."description",
+    p."quantity",
+    p."categoryId",
+    p."createdAt",
+    p."updatedAt",
+    c."name" AS "categoryName",
+    STRING_AGG(t."imageUrl", ',') AS "imageUrls",
+    STRING_AGG(t."fileSize"::TEXT, ',') AS "fileSizes"
+FROM products p
+JOIN categories c ON p."categoryId" = c."id"
+LEFT JOIN product_thumbnails t ON p."id" = t."productId"
+
+
+            WHERE p."id" = $1 and p."isDeleted" = FALSE
+            GROUP BY p."id", c."name"`, [id]
         );
 
         // console.log("Fetched product by ID:", rows);

@@ -38,8 +38,19 @@ export interface IProductUI {
   product_name: string;
   product_description: string;
   product_quantity: number;
+  product_category_id: number;
   category_name: string;
   image_url: string;
+  image_urls?: string; // Comma-separated string of image URLs
+  file_size: number;
+  file_sizes?: string; // Comma-separated string of file sizes
+  created_at: Date | string;
+  updated_at: Date | string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  product_price?: number; // Add this field since it's being used in ProductList
+  imageUrls?: string; // Add this to match API response
+  fileSizes?: string; // Add this to match API response
 }
 
 interface ProductTableProps {
@@ -83,12 +94,18 @@ const ProductTable: React.FC<ProductTableProps> = ({
   });
 
   const handleImageClick = (product: IProductUI) => {
+    // console.log("")
+    console.log ( "handleimgaeclick" ,product)
     setImagePopup({
       open: true,
       productId: product.product_id,
       productName: product.product_name,
-      imageUrl: product.image_url,
+      imageUrl: ( product.image_url)
     });
+    console.log("Image clicked:", product.product_name, product.imageUrls);
+    console.log("Image URL:", product.imageUrls?.split(",")[0] || product.image_url);
+
+
   };
 
   const handleCloseImagePopup = () => {
@@ -513,14 +530,12 @@ const ProductTable: React.FC<ProductTableProps> = ({
           "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
             color: "primary.contrastText",
             fontWeight: 500,
+            paddingTop: "12px",
           },
           "& .MuiSelect-select": {
             color: "primary.contrastText",
             // marginBottom: "20px",
             
-          },
-          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
-            paddingTop: "12px",
           },
           // "& .MuiInputBase-root": {
           //   color: "primary.contrastText",

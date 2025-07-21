@@ -50,18 +50,33 @@ const ProductList: React.FC = () => {
           },
           withCredentials: true,
         });
-        
+        console.log("Response  data data:", response.data); // Debugging log
         const responseData = response.data.data;
+        console.log("Response data:", responseData); // Debugging log
         const paginatedProducts = responseData.products || [];
         const pagination = responseData.pagination || {};
 
         // Ensure numeric fields are numbers
+        console.log("pagination products:", paginatedProducts); // Debugging log
+        // Map API response to frontend interface structure
         const data: IProductUI[] = paginatedProducts.map((item: any) => ({
-          ...item,
-          product_quantity: Number(item.product_quantity),
-          product_price: Number(item.product_price),
+          product_id: item.product_id ? item.product_id.toString() : '',
+          product_name: item.product_name || '',
+          product_description: item.product_description || '',
+          product_quantity: typeof item.product_quantity === 'string' ? parseFloat(item.product_quantity) : Number(item.product_quantity) || 0,
+          product_price: typeof item.product_quantity === 'string' ? parseFloat(item.product_quantity) : Number(item.product_quantity) || 0,
+          product_category_id: item.product_category_id || 0,
+          category_name: item.category_name || '',
+          image_url: item.image_url || '',
+          file_size: item.file_size || 0,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          image_urls: item.image_urls || '',
+          file_sizes: item.file_sizes || '',
+          imageUrls: item.imageUrls || '',
+          fileSizes: item.fileSizes || '',
         }));
-
+        console.log("Fetched products:", data); // Debugging log
         setProducts(data);
         setTotalItems(pagination.totalItems || 0);
 
@@ -72,7 +87,7 @@ const ProductList: React.FC = () => {
           );
           setCategories(uniqueCategories);
         }
-        
+
         setError(null);
       } catch (err: any) {
         setError(err.message || "Failed to load products");
@@ -288,4 +303,5 @@ const ProductList: React.FC = () => {
   );
 };
 
+// export default ProductList;
 export default ProductList;

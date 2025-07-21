@@ -24,11 +24,13 @@ export function mapProductListDBToUI(db: IProductDBThumbnail[]): IProductUIThumb
         product_description: product.description,
         product_quantity: product.quantity,
         product_category_id: product.categoryId,
-        category_name: product.categoryName, // or null, depending on IProductUI definition
-        image_url: product.imageUrl ?? "", // Provide a default empty string if undefined
-        file_size: product.fileSize ?? 0, // Provide a default value if undefined
+        category_name: product.categoryName,
+        image_url: product.imageUrls ? product.imageUrls.split(',')[0].trim() : "", // Take first image
+        file_size: product.fileSizes ? parseInt(product.fileSizes.split(',')[0].trim()) : 0, // Take first file size
         created_at: product.createdAt ?? new Date(0),
         updated_at: product.updatedAt ?? new Date(0),
+        image_urls: product.imageUrls || "", // Keep full comma-separated string
+        file_sizes: product.fileSizes || "", // Keep full comma-separated string
     }));
 }
 export function mapProductUIToDB(ui: IProductUI): IProductDB {
