@@ -1,13 +1,11 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
- 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 class Database {
     private static instance: Database;
     private pool: Pool;
- 
     private constructor() {
         this.pool = new Pool({
             connectionString: process.env.DATABASE_URL,

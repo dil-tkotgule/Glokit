@@ -18,7 +18,7 @@ import {
   Card,
   Paper,
 } from "@mui/material";
-import { Search, Add } from "@mui/icons-material";
+import { Search, Add, ForkLeft } from "@mui/icons-material";
 import ProductTable, { type IProductUI } from "../component/ProductTable";
 import { useNavigate } from "react-router-dom";
 
@@ -155,7 +155,7 @@ const ProductList: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, width: "100%" }}>
+    <Box sx={{ width: "100%" }}>
       {/* Header */}
       <Box
         display="flex"
@@ -170,6 +170,15 @@ const ProductList: React.FC = () => {
         </Typography>
         <Button
           variant="contained"
+          sx={{
+            textTransform: 'none',
+            fontStyle: 'normal',
+            fontWeight: 500,
+
+            '&.MuiButton-root': {
+              textTransform: 'none'
+            }
+          }}
           startIcon={<Add />}
           onClick={() => navigate("/create")}
         >
@@ -184,7 +193,7 @@ const ProductList: React.FC = () => {
             {error}
           </Alert>
         )}
-        <Grid container spacing={2}>
+        <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               label="Search Products"
@@ -202,7 +211,7 @@ const ProductList: React.FC = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl size="small" sx={{ minWidth: 240, width: "100%" }}>
               <InputLabel>Category Filter</InputLabel>
               <Select
@@ -223,37 +232,35 @@ const ProductList: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4} display="flex" alignItems="center">
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {hasActiveFilters && (
-                <Chip
-                  label="Clear Filters"
-                  variant="outlined"
-                  color="secondary"
-                  size="small"
-                  onClick={() => {
-                    setSearch("");
-                    setCategoryFilter("");
-                    setSortField("");
-                    setSortOrder("asc");
-                    setPage(0);
-                  }}
-                  onDelete={() => {
-                    setSearch("");
-                    setCategoryFilter("");
-                    setSortField("");
-                    setSortOrder("asc");
-                    setPage(0);
-                  }}
-                />
-              )}
+          <Grid item xs={12} md={5} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}>
+            {hasActiveFilters && (
               <Chip
-                label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? "s" : ""}`}
-                color="primary"
-                size="small"
+                label="Clear Filters"
                 variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={() => {
+                  setSearch("");
+                  setCategoryFilter("");
+                  setSortField("");
+                  setSortOrder("asc");
+                  setPage(0);
+                }}
+                onDelete={() => {
+                  setSearch("");
+                  setCategoryFilter("");
+                  setSortField("");
+                  setSortOrder("asc");
+                  setPage(0);
+                }}
               />
-            </Stack>
+            )}
+            {/* <Chip
+              label={`${sortedProducts.length} Product${sortedProducts.length !== 1 ? "s" : ""}`}
+              color="primary"
+              size="small"
+              variant="outlined"
+            /> */}
           </Grid>
         </Grid>
       </Paper>
