@@ -1,10 +1,8 @@
-// Sidebar.tsx
 import React from 'react';
 import {
   Box,
   Divider,
   Drawer,
-  Typography,
   List,
   ListItem,
   ListItemButton,
@@ -13,9 +11,9 @@ import {
   useTheme,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 interface SidebarProps {
   variant: 'permanent' | 'temporary';
@@ -24,7 +22,7 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { text: 'Home', icon: <DashboardIcon />, path: '/' },
+  { text: 'Product List', icon: <DashboardIcon />, path: '/' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ variant, open, onClose }) => {
@@ -41,7 +39,6 @@ const Sidebar: React.FC<SidebarProps> = ({ variant, open, onClose }) => {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        display: { xs: 'block', md: 'block' },
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
@@ -52,19 +49,28 @@ const Sidebar: React.FC<SidebarProps> = ({ variant, open, onClose }) => {
       }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="subtitle1" fontWeight={600} color="text.secondary" mb={1}>
-          Admin Panel
-        </Typography>
         <Divider />
       </Box>
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton component={Link} to={item.path}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
+          <NavLink
+            key={item.text}
+            to={item.path}
+            style={({ isActive }) => ({
+              textDecoration: 'none',
+              color: 'inherit',
+              backgroundColor: isActive ? '#e0e0e0' : 'transparent',
+              borderRadius: '4px',
+              display: 'block',
+            })}
+          >
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          </NavLink>
         ))}
       </List>
     </Drawer>
