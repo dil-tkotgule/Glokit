@@ -1,42 +1,39 @@
-import { Pool, QueryResult, QueryResultRow } from 'pg';
+import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
-
+ 
+// Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
 class Database {
     private static instance: Database;
     private pool: Pool;
-
-    constructor() {
+ 
+    private constructor() {
         this.pool = new Pool({
-           user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  database: process.env.DB_NAME,
+            connectionString: process.env.DATABASE_URL,
+            ssl: {
+                rejectUnauthorized: false, // Required by Neon
+            },
         });
-
+ 
         this.pool.connect()
             .then(() => {
-
-
-                console.log('[DB] Database connected');
+                console.log("Connecting to DB:", process.env.DATABASE_URL);
+                console.log('[DB] Connected to Neon database');
             })
             .catch((err) => {
-                console.error('[DB] Connection error', err);
+                console.error('[DB] Connection error:', err.message);
                 process.exit(1);
             });
     }
-
+ 
     public static getInstance(): Database {
         if (!Database.instance) {
             Database.instance = new Database();
         }
-
         return Database.instance;
     }
-
+ 
     public getPool(): Pool {
         return this.pool;
     }
