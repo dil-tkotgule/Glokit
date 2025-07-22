@@ -142,7 +142,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 }}
               >
                 <MenuItem onClick={handleMenuClose}>View Profile</MenuItem>
-                <MenuItem onClick={handleForgotPassword}>Forgot Password</MenuItem>
+                <MenuItem onClick={handleForgotPassword}>Change Password</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </Box>
