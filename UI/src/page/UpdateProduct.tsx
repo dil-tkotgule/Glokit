@@ -18,6 +18,8 @@ import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { blue } from '@mui/material/colors';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 const MAX_IMAGES = 2;
 const MAX_IMAGE_SIZE_MB = 5;
@@ -281,16 +283,20 @@ const UpdateProduct: React.FC = () => {
         form.append('thumbnails', file);
       });
 
-      await axios.put(`${BACKEND_URL}/app/product/update/${id}`, form,{
+      await axios.put(`${BACKEND_URL}/app/product/update/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true, 
+        withCredentials: true,
       });
-      alert('Product updated successfully!');
+
+      toast.success('Product updated successfully!', {
+        onClose: () => navigate('/'),
+      });
       resetForm();
-      navigate(`/`);
     } catch (err) {
       console.error(err);
-      alert('Failed to update product.');
+      toast.error('Failed to update product.', {
+        onClose: () => navigate('/'),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -410,6 +416,9 @@ const UpdateProduct: React.FC = () => {
     background: '#f9f9f9',
   }}
 >
+  <ToastContainer
+    autoClose={500}
+  />
   <Grid container spacing={4}
     display={'flex'}
         justifyContent={'center'}

@@ -133,7 +133,7 @@ const ForgotPassword: React.FC = () => {
                         mb: 1
                     }}
                 >
-                    Forgot Password
+                Change Password
                 </Typography>
                 <form onSubmit={handleSubmit} noValidate style={{ width: '100%' }}>
                     <TextField

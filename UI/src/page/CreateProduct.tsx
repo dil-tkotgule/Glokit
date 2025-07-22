@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material';
+import { toast, ToastContainer } from 'react-toastify';
 
 const MAX_IMAGES = 2;
 const MAX_IMAGE_SIZE_MB = 5;
@@ -183,15 +184,18 @@ const CreateProduct: React.FC = () => {
 
       await axios.post('http://localhost:3000/app/product/create', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true, // ✅ Send JWT/session cookie
+        withCredentials: true,
       });
 
-      alert('Product created successfully!');
+      toast.success('Product created successfully!', {
+        onClose: () => navigate('/'),
+      });
       resetForm();
-      navigate('/');
     } catch (err) {
       console.error('Error creating product:', err);
-      alert('Failed to create product.');
+      toast.error('Failed to create product.', {
+        onClose: () => navigate('/'),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -209,7 +213,8 @@ const CreateProduct: React.FC = () => {
     Create New Product
   </Typography>
   <Divider sx={{ mb: 3 }} />
-
+    <ToastContainer
+    autoClose={500} />
   <Box component="form" noValidate onSubmit={handleSubmit}>
     <Grid container spacing={3}>
       <Grid item xs={12} md={8}>

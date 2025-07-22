@@ -70,7 +70,11 @@ import {type ProductInterface} from './ProductSchema'
 interface ProductPageProp{
   products:ProductInterface[]
 }
-const ProductPage: React.FC<ProductPageProp> = ({products}) => {
+const ProductPage: React.FC<any> = ({ products = [] }) => {
+  products = products.products || [];
+  // console.log("Products:        sa", products);
+  const validProducts = products;
+  // console.log("Valid Products:", validProducts);
   return (
     <Box sx={{ width: '100%', px: 0, maxWidth: 1200, mx: 'auto' }}>
       <Box
@@ -92,7 +96,7 @@ const ProductPage: React.FC<ProductPageProp> = ({products}) => {
           marginTop: 2,
         }}
       >
-        {products.map((product) => (
+        {validProducts.map((product) => (
           <Box
             key={product.product_id}
             sx={{

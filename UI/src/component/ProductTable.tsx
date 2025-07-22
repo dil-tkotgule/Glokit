@@ -20,6 +20,11 @@ import {
   CircularProgress,
   Stack,
   useTheme,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -93,6 +98,11 @@ const ProductTable: React.FC<ProductTableProps> = ({
     imageUrl: "",
   });
 
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    open: boolean;
+    productId: string | null;
+  }>({ open: false, productId: null });
+
   const handleImageClick = (product: IProductUI) => {
     // console.log("")
     console.log ( "handleimgaeclick" ,product)
@@ -115,6 +125,21 @@ const ProductTable: React.FC<ProductTableProps> = ({
       productName: "",
       imageUrl: "",
     });
+  };
+
+  const handleDeleteClick = (productId: string) => {
+    setDeleteConfirmation({ open: true, productId });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmation.productId) {
+      onDelete(deleteConfirmation.productId);
+    }
+    setDeleteConfirmation({ open: false, productId: null });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ open: false, productId: null });
   };
 
   const renderSortButton = (field: keyof IProductUI, label: string) => (
@@ -245,331 +270,356 @@ const ProductTable: React.FC<ProductTableProps> = ({
   };
 
   return (
-    <Paper 
-      elevation={3} 
-      sx={{ 
-        width: "100%", 
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        borderRadius: 3,
-        backgroundColor: "background.paper",
-      }}
-    >
-      {/* Table Container - Takes remaining space */}
-      <TableContainer sx={{ 
-        flex: 1, 
-        overflow: "auto",
-        minHeight: 0, // Important for flex child to shrink
-        "&::-webkit-scrollbar": {
-          width: "8px",
-          height: "8px",
-        },
-        "&::-webkit-scrollbar-track": {
-          backgroundColor: "grey.100",
-          borderRadius: "4px",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          backgroundColor: "grey.400",
-          borderRadius: "4px",
-          "&:hover": {
-            backgroundColor: "grey.500",
+    <>
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          width: "100%", 
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          borderRadius: 3,
+          backgroundColor: "background.paper",
+        }}
+      >
+        {/* Table Container - Takes remaining space */}
+        <TableContainer sx={{ 
+          flex: 1, 
+          overflow: "auto",
+          minHeight: 0, // Important for flex child to shrink
+          "&::-webkit-scrollbar": {
+            width: "8px",
+            height: "8px",
           },
-        },
-      }}>
-        <Table stickyHeader sx={{ minWidth: 900 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "25%",
-                  py: 2,
-                }}
-              >
-                {renderSortButton("product_name", "Product Name")}
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "10%",
-                  textAlign: "center",
-                  py: 2,
-                }}
-              >
-                Image
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "30%",
-                  py: 2,
-                }}
-              >
-                {renderSortButton("product_description", "Description")}
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "15%",
-                  py: 2,
-                }}
-              >
-                {renderSortButton("product_quantity", "Quantity")}
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "10%",
-                  py: 2,
-                }}
-              >
-                {renderSortButton("category_name", "Category")}
-              </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "primary.contrastText",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  borderBottom: "none",
-                  width: "10%",
-                  textAlign: "center",
-                  py: 2,
-                }}
-              >
-                Actions
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {products.length > 0 ? (
-              products.map((product, index) => (
-                <TableRow
-                  key={product.product_id}
-                  hover
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "grey.100",
+            borderRadius: "4px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "grey.400",
+            borderRadius: "4px",
+            "&:hover": {
+              backgroundColor: "grey.500",
+            },
+          },
+        }}>
+          <Table stickyHeader sx={{ minWidth: 900 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell
                   sx={{
-                    "&:nth-of-type(even)": {
-                      backgroundColor: "grey.50",
-                    },
-                    "&:hover": {
-                      backgroundColor: "primary.light",
-                      "& .MuiTableCell-root": {
-                        color: "primary.contrastText",
-                      },
-                      "& .MuiChip-root": {
-                        backgroundColor: "primary.contrastText",
-                        color: "primary.main",
-                      },
-                    },
-                    cursor: "pointer",
-                    transition: "all 0.2s ease-in-out",
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "25%",
+                    py: 2,
                   }}
                 >
-                  <TableCell sx={{ py: 2, px: 3 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 600,
-                        color: "text.primary",
-                        lineHeight: 1.4,
-                        fontSize: "0.95rem",
-                      }}
-                    >
-                      {product.product_name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center" sx={{ py: 2, px: 3 }}>
-                    {renderProductImage(product)}
-                  </TableCell>
-                  <TableCell sx={{ py: 2, px: 3 }}>
-                    <Tooltip title={product.product_description} arrow>
+                  {renderSortButton("product_name", "Product Name")}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "10%",
+                    textAlign: "center",
+                    py: 2,
+                  }}
+                >
+                  Image
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "30%",
+                    py: 2,
+                  }}
+                >
+                  {renderSortButton("product_description", "Description")}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "15%",
+                    py: 2,
+                  }}
+                >
+                  {renderSortButton("product_quantity", "Quantity")}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "10%",
+                    py: 2,
+                  }}
+                >
+                  {renderSortButton("category_name", "Category")}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    borderBottom: "none",
+                    width: "10%",
+                    textAlign: "center",
+                    py: 2,
+                  }}
+                >
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {products.length > 0 ? (
+                products.map((product, index) => (
+                  <TableRow
+                    key={product.product_id}
+                    hover
+                    sx={{
+                      "&:nth-of-type(even)": {
+                        backgroundColor: "grey.50",
+                      },
+                      "&:hover": {
+                        backgroundColor: "primary.light",
+                        "& .MuiTableCell-root": {
+                          color: "primary.contrastText",
+                        },
+                        "& .MuiChip-root": {
+                          backgroundColor: "primary.contrastText",
+                          color: "primary.main",
+                        },
+                      },
+                      cursor: "pointer",
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                  >
+                    <TableCell sx={{ py: 2, px: 3 }}>
                       <Typography
                         variant="body2"
                         sx={{
-                          color: "text.secondary",
+                          fontWeight: 600,
+                          color: "text.primary",
                           lineHeight: 1.4,
-                          fontSize: "0.9rem",
+                          fontSize: "0.95rem",
                         }}
                       >
-                        {truncateText(product.product_description)}
+                        {product.product_name}
                       </Typography>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ py: 2, px: 3 }}>
-                    {renderQuantityWithIndicator(product.product_quantity)}
-                  </TableCell>
-                  <TableCell sx={{ py: 2, px: 3 }}>
-                    <Chip
-                      label={product.category_name}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                      sx={{
-                        fontWeight: 500,
-                        borderRadius: 3,
-                        fontSize: "0.8rem",
-                        height: 28,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="center" sx={{ py: 2, px: 3 }}>
-                    <Stack direction="row" spacing={1} justifyContent="center">
-                      <Tooltip title="Edit Product" arrow>
-                        <IconButton
-                          component={Link}
-                          to={`/product/update/${product.product_id}`}
-                          size="small"
+                    </TableCell>
+                    <TableCell align="center" sx={{ py: 2, px: 3 }}>
+                      {renderProductImage(product)}
+                    </TableCell>
+                    <TableCell sx={{ py: 2, px: 3 }}>
+                      <Tooltip title={product.product_description} arrow>
+                        <Typography
+                          variant="body2"
                           sx={{
-                            color: "info.main",
-                            backgroundColor: "",
-                            "&:hover": {
-                              backgroundColor: "info.main",
-                              color: "info.contrastText",
-                              transform: "scale(1.1)",
-                            },
-                            transition: "all 0.2s ease-in-out",
+                            color: "text.secondary",
+                            lineHeight: 1.4,
+                            fontSize: "0.9rem",
                           }}
                         >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
+                          {truncateText(product.product_description)}
+                        </Typography>
                       </Tooltip>
-                      <Tooltip title="Delete Product" arrow>
-                        <IconButton
-                          onClick={() => onDelete(product.product_id)}
-                          size="small"
-                          disabled={deleteLoading === product.product_id}
-                          sx={{
-                            color: "error.main",
-                            backgroundColor: "",
-                            "&:hover": {
-                              backgroundColor: "error.main",
-                              color: "error.contrastText",
-                              transform: "scale(1.1)",
-                            },
-                            "&:disabled": {
-                              backgroundColor: "grey.200",
-                              color: "grey.500",
-                            },
-                            transition: "all 0.2s ease-in-out",
-                          }}
-                        >
-                          {deleteLoading === product.product_id ? (
-                            <CircularProgress size={16} />
-                          ) : (
-                            <DeleteIcon fontSize="small" />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
+                    </TableCell>
+                    <TableCell sx={{ py: 2, px: 3 }}>
+                      {renderQuantityWithIndicator(product.product_quantity)}
+                    </TableCell>
+                    <TableCell sx={{ py: 2, px: 3 }}>
+                      <Chip
+                        label={product.category_name}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{
+                          fontWeight: 500,
+                          borderRadius: 3,
+                          fontSize: "0.8rem",
+                          height: 28,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center" sx={{ py: 2, px: 3 }}>
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Tooltip title="Edit Product" arrow>
+                          <IconButton
+                            component={Link}
+                            to={`/product/update/${product.product_id}`}
+                            size="small"
+                            sx={{
+                              color: "info.main",
+                              backgroundColor: "",
+                              "&:hover": {
+                                backgroundColor: "info.main",
+                                color: "info.contrastText",
+                                transform: "scale(1.1)",
+                              },
+                              transition: "all 0.2s ease-in-out",
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Product" arrow>
+                          <IconButton
+                            onClick={() => handleDeleteClick(product.product_id)}
+                            size="small"
+                            disabled={deleteLoading === product.product_id}
+                            sx={{
+                              color: "error.main",
+                              backgroundColor: "",
+                              "&:hover": {
+                                backgroundColor: "error.main",
+                                color: "error.contrastText",
+                                transform: "scale(1.1)",
+                              },
+                              "&:disabled": {
+                                backgroundColor: "grey.200",
+                                color: "grey.500",
+                              },
+                              transition: "all 0.2s ease-in-out",
+                            }}
+                          >
+                            {deleteLoading === product.product_id ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <DeleteIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                    <Box sx={{ textAlign: "center" }}>
+                      <ImageIcon sx={{ fontSize: 64, color: "grey.400", mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                        No products found
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Try adjusting your search or filter criteria
+                      </Typography>
+                    </Box>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                  <Box sx={{ textAlign: "center" }}>
-                    <ImageIcon sx={{ fontSize: 64, color: "grey.400", mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                      No products found
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Try adjusting your search or filter criteria
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      
-      {/* Pagination - Fixed at bottom */}
-      <TablePagination
-        component="div"
-        count={count}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        rowsPerPageOptions={[5, 10, 25, 50]}
-        sx={{
-          alignItems: "center",
-          borderTop: 2,
-          borderColor: "primary.main",
-          backgroundColor: "primary.light",
-          color: "primary.contrastText",
-          flexShrink: 0, // Prevent pagination from shrinking
-          minHeight: 52, // Ensure minimum height
-          textAlign: "center",
-          "& .MuiTablePagination-toolbar": {
-            px: 3,
-            py: 1.5,
-          },
-          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        
+        {/* Pagination - Fixed at bottom */}
+        <TablePagination
+          component="div"
+          count={count}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          sx={{
+            alignItems: "center",
+            borderTop: 2,
+            borderColor: "primary.main",
+            backgroundColor: "primary.light",
             color: "primary.contrastText",
-            fontWeight: 500,
-            paddingTop: "12px",
-          },
-          "& .MuiSelect-select": {
-            color: "primary.contrastText",
-            // marginBottom: "20px",
-            
-          },
-          // "& .MuiInputBase-root": {
-          //   color: "primary.contrastText",
-          //   marginTop: "0px",
-          //   // boxSizing: "border-box",
-          //   // display: "flex",
-          //   alignItems: "flex-start",
-          //   textAlign: "top",
-          // },
-          "& .MuiIconButton-root": {
-            color: "primary.contrastText",
-            "&:hover": {
-              backgroundColor: "primary.main",
+            flexShrink: 0, // Prevent pagination from shrinking
+            minHeight: 52, // Ensure minimum height
+            textAlign: "center",
+            "& .MuiTablePagination-toolbar": {
+              px: 3,
+              py: 1.5,
             },
-            "&.Mui-disabled": {
-              color: "primary.light",
+            "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+              color: "primary.contrastText",
+              fontWeight: 500,
+              paddingTop: "12px",
             },
-          },
-        }}
-        labelRowsPerPage="Rows per page:"
-        labelDisplayedRows={({ from, to, count }) =>
-          `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
-        }
-      />
-      
-      {/* Image Popup Modal */}
-      <ImagePopup
-        open={imagePopup.open}
-        onClose={handleCloseImagePopup}
-        productId={imagePopup.productId}
-        productName={imagePopup.productName}
-        initialImageUrl={imagePopup.imageUrl}
-      />
-    </Paper>
+            "& .MuiSelect-select": {
+              color: "primary.contrastText",
+              // marginBottom: "20px",
+              
+            },
+            // "& .MuiInputBase-root": {
+            //   color: "primary.contrastText",
+            //   marginTop: "0px",
+            //   // boxSizing: "border-box",
+            //   // display: "flex",
+            //   alignItems: "flex-start",
+            //   textAlign: "top",
+            // },
+            "& .MuiIconButton-root": {
+              color: "primary.contrastText",
+              "&:hover": {
+                backgroundColor: "primary.main",
+              },
+              "&.Mui-disabled": {
+                color: "primary.light",
+              },
+            },
+          }}
+          labelRowsPerPage="Rows per page:"
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+          }
+        />
+        
+        {/* Image Popup Modal */}
+        <ImagePopup
+          open={imagePopup.open}
+          onClose={handleCloseImagePopup}
+          productId={imagePopup.productId}
+          productName={imagePopup.productName}
+          initialImageUrl={imagePopup.imageUrl}
+        />
+      </Paper>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmation.open}
+        onClose={handleCancelDelete}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
