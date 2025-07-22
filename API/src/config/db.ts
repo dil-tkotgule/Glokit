@@ -13,6 +13,7 @@ class Database {
                 rejectUnauthorized: false, // Required by Neon
             },
         });
+        
  
         this.pool.connect()
             .then(() => {
