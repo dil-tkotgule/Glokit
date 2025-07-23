@@ -28,7 +28,7 @@ const BACKEND_URL = 'http://localhost:3000';
 interface IFormData {
   name: string;
   description: string;
-  quantity: number;
+  quantity: number | '';
   category_name: string;
   thumbnails: File[];  // all images as files
 }
@@ -78,7 +78,7 @@ const UpdateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
     description: '',
-    quantity: 0,
+    quantity: '',
     category_name: '',
     thumbnails: [],
   });
@@ -91,52 +91,52 @@ const UpdateProduct: React.FC = () => {
   // Load product and convert existing images into File objects
   useEffect(() => {
     const fetchProductData = async () => {
-     try {
-  const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`, {
-    withCredentials: true,
-  });
-  const items = Array.isArray(res.data.data) ? res.data.data : [res.data.data];
-  if (!items.length) return;
+      try {
+        const res = await axios.get(`${BACKEND_URL}/app/product/get/${id}`, {
+          withCredentials: true,
+        });
+        const items = Array.isArray(res.data.data) ? res.data.data : [res.data.data];
+        if (!items.length) return;
 
-  const main = {
-    ...items[0],
-    images: items[0].image_urls ? items[0].image_urls.split(',') : [],
-  };
+        const main = {
+          ...items[0],
+          images: items[0].image_urls ? items[0].image_urls.split(',') : [],
+        };
 
-  console.log('Fetched product:', main);
-  setFormData({
-    name: main.product_name || '',
-    description: main.product_description || '',
-    quantity: Number(main.product_quantity) || 0,
-    category_name: main.category_name || '',
-    thumbnails: [], // will fill below
-  });
+        console.log('Fetched product:', main);
+        setFormData({
+          name: main.product_name || '',
+          description: main.product_description || '',
+          quantity: Number(main.product_quantity) || 0,
+          category_name: main.category_name,
+          thumbnails: [], // will fill below
+        });
 
-  // Convert each image URL to File object
-  const files: File[] = await Promise.all(
-    main.images.map(async (imageUrl: string, idx: number) => {
-      const url = getImageUrl(imageUrl.trim());
-      const extension = url.split('.').pop()?.split(/\#|\?/)[0] || 'jpg';
-      const filename = `image_${idx + 1}.${extension}`;
-      return await urlToFile(url, filename);
-    })
-  );
+        // Convert each image URL to File object
+        const files: File[] = await Promise.all(
+          main.images.map(async (imageUrl: string, idx: number) => {
+            const url = getImageUrl(imageUrl.trim());
+            const extension = url.split('.').pop()?.split(/\#|\?/)[0] || 'jpg';
+            const filename = `image_${idx + 1}.${extension}`;
+            return await urlToFile(url, filename);
+          })
+        );
 
-  // Create previews for UI
-  const previews = files.map((file) => ({
-    src: URL.createObjectURL(file),
-    name: file.name,
-    size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-    file,
-  }));
+        // Create previews for UI
+        const previews = files.map((file) => ({
+          src: URL.createObjectURL(file),
+          name: file.name,
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          file,
+        }));
 
-  setFormData((prev) => ({ ...prev, thumbnails: files }));
-  setNewPreviews(previews);
-} catch (error) {
-  console.error('Failed to load product data', error);
-} finally {
-  setLoading(false);
-}
+        setFormData((prev) => ({ ...prev, thumbnails: files }));
+        setNewPreviews(previews);
+      } catch (error) {
+        console.error('Failed to load product data', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProductData();
@@ -159,7 +159,9 @@ const UpdateProduct: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'quantity' ? Number(value) : value,
+      [name]: name === 'quantity'
+        ? (value === '' ? '' : Number(value))
+        : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
   }, []);
@@ -316,35 +318,24 @@ const UpdateProduct: React.FC = () => {
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
-      <Box component="form" onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+      <Box component="form" onSubmit={handleSubmit} display={'flex'} justifyContent={'center'} alignContent={'flex-start'}>
+        <Grid container sx={{width:'100%'}} spacing={{ xs: 2, sm: 3 }} justifyContent="center" alignItems="flex-start">
+          <Grid item xs={12} md={8} width={'50%'}>
+            <Grid container  display={'flex'} spacing={2}>
+              <Grid item xs={12} sm={6} width={'100%'}>
                 <TextField
                   label="Product Name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   fullWidth
+                  sx={{  mt:0.5,width:'100%'}}
                   required
                   error={!!errors.name}
                   helperText={errors.name}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="quantity"
-                  name="quantity"
-                  type="number"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
-                  fullWidth
-                  required
-                  error={!!errors.quantity}
-                  helperText={errors.quantity}
-                />
-              </Grid>
+
             </Grid>
 
             <TextField
@@ -355,22 +346,46 @@ const UpdateProduct: React.FC = () => {
               fullWidth
               multiline
               minRows={4}
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, width: '100%' }}
               error={!!errors.description}
               helperText={errors.description}
             />
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
-          <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {isSubmitting ? 'Updating...' : 'Update Product'}
-          </Button>
-        </Box>
+
+            <Grid item xs={12} sm={6} display={'flex'} gap={2} justifyContent={'center'} alignContent={'center'} >
+              <TextField
+                label="Quantity"
+                name="quantity"
+                type="number"
+                sx={{ mt: 2, width: '100%' }}
+                value={formData.quantity}
+                onChange={handleInputChange}
+                fullWidth
+                required
+                error={!!errors.quantity}
+                helperText={errors.quantity}
+              />
+              <FormControl fullWidth required error={!!errors.category_name} sx={{ mb: 3, mt: 2 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  name="category_name"
+                  label="Category"
+                  value={formData.category_name}
+                  onChange={handleInputChange}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <MenuItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>{errors.category_name}</FormHelperText>
+              </FormControl>
+            </Grid>
+
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth required error={!!errors.category_name} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={4}  width={'35%'}>
+            {/* <FormControl fullWidth required error={!!errors.category_name} sx={{ mb: 3 }}>
               <InputLabel>Category</InputLabel>
               <Select
                 name="category_name"
@@ -385,7 +400,7 @@ const UpdateProduct: React.FC = () => {
                 ))}
               </Select>
               <FormHelperText>{errors.category_name}</FormHelperText>
-            </FormControl>
+            </FormControl> */}
 
             <Button
               variant="contained"
@@ -404,52 +419,62 @@ const UpdateProduct: React.FC = () => {
             </Typography>
             <FormHelperText error>{errors.thumbnails}</FormHelperText>
 
-         <Box
-           display={'flex'}
-         justifyContent={'center'}
-        alignItems={'center'}
-  sx={{
-    border: '2px dashed #ccc',
-    borderRadius: 1,
-    p: 1,
-    minHeight: 150,
-    background: '#f9f9f9',
-  }}
->
-  <ToastContainer
-    autoClose={500}
-  />
-  <Grid container spacing={4}
-    display={'flex'}
-        justifyContent={'center'}
-        alignItems={'center'}
-        >
-    {newPreviews.map((img, i) => (
-      <Grid
-        item
-        xs={12}
-        key={`new-${i}`}
-      
-        sx={{ position: 'relative', backgroundColor: 'transparent' }} // fixed here
-      >
-        <img
-          src={img.src}
-          alt={img.name}
-          style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
-        />
-        <IconButton
-          size="small"
-          sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'white' }}
-          onClick={() => handleImageDelete(i)}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Grid>
-    ))}
-  </Grid>
-</Box>
+            <Box
+              display={'flex'}
+              justifyContent={'center'}
+              alignItems={'center'}
 
+              sx={{
+                border: '2px dashed #ccc',
+                borderRadius: 1,
+                p: 1,
+                minHeight: 135,
+                background: '#f9f9f9',
+              }}
+            >
+              <ToastContainer
+                autoClose={500}
+              />
+              <Grid container spacing={4}
+                display={'flex'}
+                justifyContent={'center'}
+                alignItems={'center'}
+              >
+                {newPreviews.map((img, i) => (
+                  <Grid
+                    item
+                    xs={12}
+                    key={`new-${i}`}
+
+                    sx={{ position: 'relative', backgroundColor: 'transparent' }} // fixed here
+                  >
+                    <img
+                      src={img.src}
+                      alt={img.name}
+                      style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 4 }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'white' }}
+                      onClick={() => handleImageDelete(i)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+             <Button type="submit" variant="contained" disabled={isSubmitting}>
+                {isSubmitting ? 'Updating...' : 'Update Product'}
+              </Button>
+              <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+             
+            </Box>
           </Grid>
+
         </Grid>
 
 

@@ -14,7 +14,7 @@ const MAX_IMAGE_SIZE_MB = 5;
 
 export interface IFormData {
   name: string;
-  quantity: number;
+  quantity: number | '';
   description: string;
   category_name: string;
   thumbnails?: File[];
@@ -45,7 +45,7 @@ const CATEGORIES = [
 const CreateProduct: React.FC = () => {
   const [formData, setFormData] = useState<IFormData>({
     name: '',
-    quantity: 0,
+    quantity: '',
     description: '',
     category_name: 'Choose',
     thumbnails: [],
@@ -59,7 +59,7 @@ const CreateProduct: React.FC = () => {
   const resetForm = useCallback(() => {
     setFormData({
       name: '',
-      quantity: 0,
+      quantity: '',
       description: '',
       category_name: 'Choose',
       thumbnails: [],
@@ -73,7 +73,9 @@ const CreateProduct: React.FC = () => {
       const { name, value } = e.target;
       setFormData((prev) => ({
         ...prev,
-        [name]: name === 'quantity' ? Number(value) : value,
+        [name]: name === 'quantity'
+          ? (value === '' ? '' : Number(value))
+          : value,
       }));
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }, []);
@@ -145,9 +147,9 @@ const CreateProduct: React.FC = () => {
       formErrors.name = 'Only letters, numbers, and spaces are allowed.';
     }
 
-    if (!formData.quantity || isNaN(formData.quantity) || formData.quantity <= 0) {
+    if (formData.quantity === '' || isNaN(Number(formData.quantity)) || Number(formData.quantity) <= 0) {
       formErrors.quantity = 'Enter a valid quantity > 0.';
-    } else if (!Number.isInteger(formData.quantity)) {
+    } else if (!Number.isInteger(Number(formData.quantity))) {
       formErrors.quantity = 'quantity must be a whole number.';
     }
 
@@ -207,146 +209,183 @@ const CreateProduct: React.FC = () => {
   };
 
   return (
+    <Paper sx={{
+      p: { xs: 2, sm: 3, md: 4 },
+      mt: { xs: 2, sm: 3, md: 4 },
+      borderRadius: 2,
+      mx: 'auto',
+      width: '100%',                    // full width
+      maxWidth: {                       // limit maximum width
+        xs: '100%',
+        sm: '100%',    // use full sm width
+        md: '1600px',  // increase from 1200 to 1600
+        lg: '1800px'
+      },
+      overflowX: 'hidden'              // hide any horizontal overflow
+    }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, textAlign: { xs: 'center', md: 'left' } }}
+      >
+        Create New Product
+      </Typography>
+      <Divider sx={{ mb: { xs: 2, sm: 3 } }} />
+      <ToastContainer autoClose={500} />
 
-    <Paper sx={{ p: 4, mt: 4, borderRadius: 2, maxWidth: 1000, mx: 'auto' }}>
-  <Typography variant="h4" gutterBottom>
-    Create New Product
-  </Typography>
-  <Divider sx={{ mb: 3 }} />
-    <ToastContainer
-    autoClose={500} />
-  <Box component="form" noValidate onSubmit={handleSubmit}>
-    <Grid container spacing={3}>
-      <Grid item xs={12} md={8}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+      <Box component="form" noValidate onSubmit={handleSubmit}>
+        <Grid container sx={{width:'100%'}} spacing={{ xs: 2, sm: 3 }} justifyContent="center" alignItems="flex-start">
+
+          {/* Left Column: 11/12 */}
+          <Grid item xs={12} sm={11} width={'50%'} md={11}>
+            <Grid container display={'flex'} spacing={2}>
+              <TextField
+                required
+                label="Product Name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                fullWidth
+                error={!!errors.name}
+                helperText={errors.name}
+              />
+            </Grid>
+
             <TextField
-              required
-              label="Product Name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
               fullWidth
-              error={!!errors.name}
-              helperText={errors.name}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              required
-              label="quantity"
-              name="quantity"
-              type="number"
-              value={formData.quantity || ''}
+              multiline
+              rows={5}
+              name="description"
+              label="Description"
+              value={formData.description}
               onChange={handleInputChange}
-              fullWidth
-              error={!!errors.quantity}
-              helperText={errors.quantity}
-              inputProps={{ min: 1, step: 1 }}
+              error={!!errors.description}
+              helperText={errors.description || `${formData.description.length}/1000`}
+              sx={{ mt: 2 }}
             />
-          </Grid>
-        </Grid>
 
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          name="description"
-          label="Description"
-          value={formData.description}
-          onChange={handleInputChange}
-          error={!!errors.description}
-          helperText={errors.description || `${formData.description.length}/1000`}
-          sx={{ mt: 2 }}
-        />
-
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
-          <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Product'}
-          </Button>
-        </Box>
-      </Grid>
-
-      <Grid item xs={12} md={4}>
-        <FormControl fullWidth required error={!!errors.category_name} sx={{ mb: 3 }}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            name="category_name"
-            label="Category"
-            value={formData.category_name}
-            onChange={handleInputChange}
-          >
-            {CATEGORIES.map((cat) => (
-              <MenuItem key={cat.value} value={cat.value}>
-                {cat.label}
-              </MenuItem>
-            ))}
-          </Select>
-          <FormHelperText>{errors.category_name}</FormHelperText>
-        </FormControl>
-
-        <Button
-          variant="contained"
-          component="label"
-          fullWidth
-          disabled={previews.length >= MAX_IMAGES}
-          startIcon={<CloudUploadIcon />}
-          sx={{ mb: 1 }}
-        >
-          Upload Images
-          <input type="file" hidden multiple accept="image/*" onChange={handleFileChange} />
-        </Button>
-
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          Max {MAX_IMAGES} images, {MAX_IMAGE_SIZE_MB}MB each
-        </Typography>
-        <FormHelperText error>{errors.thumbnails}</FormHelperText>
-
-        <Box
-          display={'flex'}
-          justifyContent={'center'}
-          alignItems={'center'}
-          sx={{
-            border: '2px dashed #ccc',
-            borderRadius: 1,
-            p: 1,
-            minHeight: 150,
-            background: '#f9f9f9',
-          }}
-        >
-          <Grid container spacing={4} display={'flex'} justifyContent={'center'} alignItems={'center'}>
-            {previews.map((img, i) => (
-              <Grid
-                item
-                xs={12}
-                key={i}
-                sx={{ position: 'relative', backgroundColor: 'transparent' }}
-              >
-                <img
-                  src={img.src}
-                  alt={img.name}
-                  style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
+            <Grid item xs={12} sm={6} display={'flex'} gap={2} justifyContent={'center'} alignContent={'center'}>
+                <TextField
+                  required
+                  label="Quantity"
+                  name="quantity"
+                  type="number"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  fullWidth
+                  error={!!errors.quantity}
+                  helperText={errors.quantity}
                 />
-                <IconButton
-                  size="small"
-                  sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'white' }}
-                  onClick={() => handleImageDelete(i)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Grid>
-            ))}
+                <FormControl fullWidth required error={!!errors.category_name}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category_name"
+                    label="Category"
+                    value={formData.category_name}
+                    onChange={handleInputChange}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <MenuItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.category_name}</FormHelperText>
+                </FormControl>
+            
+             
+              
+              
+            </Grid>
           </Grid>
-        </Box>
-      </Grid>
-    </Grid>
-  </Box>
-</Paper>
 
+          {/* Right Column: 1/12 */}
+          <Grid item xs={12} sm={1} md={1} width={'35%'}>
+            {/* Upload button */}
+            <Button
+              variant="contained"
+              component="label"
+              fullWidth
+              disabled={previews.length >= MAX_IMAGES}
+              startIcon={<CloudUploadIcon />}
+              sx={{ mb: 2, py: { xs: 1, sm: 1.25 } }}
+            >
+              Upload Images
+              <input type="file" hidden multiple accept="image/*" onChange={handleFileChange} />
+            </Button>
+
+            {/* Instruction: max images */}
+            <Typography
+              variant="body2"
+              align="center"
+              sx={{ mb: 2, color: 'text.secondary' }}
+            >
+              Max {MAX_IMAGES} images can be uploaded.
+            </Typography>
+
+            {/* Preview grid */}
+            <Box sx={{
+              border: '2px dashed #ccc',
+              borderRadius: 1,
+              p: 1,
+              minHeight: 130,
+              background: '#f9f9f9'
+
+            }}
+            
+             display='flex' justifyContent="center" alignContent={'center'}>
+              <Grid container spacing={1}>
+                {previews.map((img, i) => (
+                  <Grid item xs={6} sm={4} key={i} sx={{ position: 'relative' }}>
+                    <img
+                      src={img.src}
+                      alt={img.name}
+                      style={{ width: 150, height: 100, objectFit: 'cover', borderRadius: 4 }}
+                    />
+                    <IconButton
+                      size="small"
+                      sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'white' }}
+                      onClick={() => handleImageDelete(i)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            {/* Action buttons */}
+            <Box sx={{
+              mt: 3,
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'flex-end',
+              gap: 2
+            }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSubmitting}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                {isSubmitting ? 'Creating...' : 'Create Product'}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Grid>
+
+        </Grid>
+      </Box>
+    </Paper>
   );
 };
+
 
 export default CreateProduct;
