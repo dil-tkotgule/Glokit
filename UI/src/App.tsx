@@ -12,6 +12,7 @@ import PublicRoute from './component/PublicRoute';    // add PublicRoute
 import HomePage from './component/User/HomePage';
 import RoleBasedRoute from './component/RoleBasedRoute';
 import ForgotPassword from './page/ForgotPassword'; 
+import Footer from './component/Footer';
 
 function App() {
   return (
@@ -92,6 +93,8 @@ function App() {
         />
         <Route path='/home-page' element={<HomePage></HomePage>}></Route>
       </Routes>
+      {/* render footer below all routes */}
+      <Footer />
     </BrowserRouter>
   );
 }
